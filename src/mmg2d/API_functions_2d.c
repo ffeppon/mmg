@@ -103,6 +103,10 @@ void MMG2D_Init_parameters(MMG5_pMesh mesh) {
   mesh->info.ls       = MMG5_LS;
 /* xreg relaxation parameter value */
   mesh->info.lxreg    = MMG5_XREG;
+    
+  /* ISO discretization mode with less snapping     
+   * and edge renumbering */
+  mesh->info.isosafe       = MMG5_OFF;
 
   /* Ridge detection */
   mesh->info.dhd      = MMG5_ANGEDG;
@@ -155,6 +159,9 @@ int MMG2D_Set_iparameter(MMG5_pMesh mesh, MMG5_pSol sol, int iparam, MMG5_int va
     break;
   case MMG2D_IPARAM_iso :
     mesh->info.iso      = val;
+    break;
+  case MMG2D_IPARAM_lssafe :
+    mesh->info.isosafe      = 1;
     break;
   case MMG2D_IPARAM_isoref :
     mesh->info.isoref   = val;

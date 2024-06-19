@@ -636,6 +636,10 @@ int MMG2D_mmg2dls(MMG5_pMesh mesh,MMG5_pSol sol,MMG5_pSol umet) {
     fprintf(stdout,"  --  INPUT DATA COMPLETED.     %s\n",stim);
 
   chrono(ON,&ctim[2]);
+    
+  // ISOSAFE mode: no edge relabelling + less snapping
+  if(mesh->info.isosafe)
+      fprintf(stdout,"\n=========== ISOSAFE MODE ==================="); 
 
   /* Set pointers */
   MMG2D_setfunc(mesh,met);
