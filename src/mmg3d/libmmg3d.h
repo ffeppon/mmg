@@ -101,6 +101,7 @@ enum MMG3D_Param {
   MMG3D_DPARAM_hgrad,                     /*!< [val], Control gradation */
   MMG3D_DPARAM_hgradreq,                  /*!< [val], Control gradation on required entites (advanced usage) */
   MMG3D_DPARAM_ls,                        /*!< [val], Value of level-set */
+  MMG3D_IPARAM_lssafe,                     /*!< [1/0], ISOsafe mode */
   MMG3D_DPARAM_rmc,                       /*!< [-1/val], Remove small connex componants in level-set mode */
   MMG3D_PARAM_size,                       /*!< [n], Number of parameters */
 };

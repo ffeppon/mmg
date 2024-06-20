@@ -319,6 +319,10 @@ int MMG3D_parsar(int argc,char *argv[],MMG5_pMesh mesh,MMG5_pSol met,MMG5_pSol s
           }
           else i--;
         }
+        else if ( !strcmp(argv[i],"-lssafe") ) {
+          if ( !MMG3D_Set_iparameter(mesh,met,MMG3D_IPARAM_lssafe,1) )
+            return 0;
+        }
         else if ( !strcmp(argv[i],"-lssurf") ) {
           if ( !MMG3D_Set_iparameter(mesh,met,MMG3D_IPARAM_isosurf,1) )
             return 0;

@@ -2161,6 +2161,9 @@ int MMG3D_Set_iparameter(MMG5_pMesh mesh, MMG5_pSol sol, int iparam,MMG5_int val
       if ( mesh->nt && !MMG3D_skipIso(mesh) )
         return 0;
     break;
+  case MMG3D_IPARAM_lssafe :
+    mesh->info.isosafe      = 1;
+    break;
   case MMG3D_IPARAM_isoref :
     mesh->info.isoref   = val;
     break;
