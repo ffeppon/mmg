@@ -1282,7 +1282,7 @@ int MMG5_setref_ls(MMG5_pMesh mesh, MMG5_pSol sol) {
             v   = sol->m[ip];
             v1  = sol->m[ip1];
             if ( v == 0.0 && v1 == 0.0) {
-              fprintf(stdout, "\nChanging ref from edge connecting %d and %d (ref: %d)",i,pt->edg[i]); 
+              fprintf(stdout, "\nChanging ref from edge connecting %d and %d (ref: %d)",ip,ip1,pt->edg[i]); 
               pt->edg[i]  = mesh->info.isoref;
               pt->tag[i] |= MG_REF;
               i1 = MMG5_inxt2[i];
