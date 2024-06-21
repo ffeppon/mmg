@@ -1442,11 +1442,14 @@ int MMG3D_analys(MMG5_pMesh mesh) {
   if ( abs(mesh->info.imprim) > 5  || mesh->info.ddebug )
     fprintf(stdout,"  ** UPDATING TOPOLOGY AT NON-MANIFOLD POINTS\n");
 
+  if(!mesh->info.isosafe){
+      // Disable search for corners and required edges
   if ( !MMG5_setNmTag(mesh,&hash) ) {
     fprintf(stderr,"\n  ## Non-manifold topology problem. Exit program.\n");
     MMG5_DEL_MEM(mesh,hash.item);
     MMG5_DEL_MEM(mesh,mesh->xpoint);
     return 0;
+  }
   }
 
   /* check subdomains connected by a vertex and mark these vertex as corner and
