@@ -726,6 +726,7 @@ int MMG3D_snpval_ls(MMG5_pMesh mesh,MMG5_pSol sol) {
   }
 
   ncg = 0;
+  if(!mesh->info.isosafe){
   do {
     nc = 0;
     /* Check snapping did not lead to a nonmanifold situation */
@@ -751,6 +752,7 @@ int MMG3D_snpval_ls(MMG5_pMesh mesh,MMG5_pSol sol) {
     ncg += nc;
   }
   while ( nc );
+  }
 
   if ( (abs(mesh->info.imprim) > 5 || mesh->info.ddebug) && ns+ncg > 0 )
     fprintf(stdout,"     %8" MMG5_PRId " points snapped, %" MMG5_PRId " corrected\n",ns,ncg);
