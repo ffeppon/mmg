@@ -725,6 +725,7 @@ int MMG3D_snpval_ls(MMG5_pMesh mesh,MMG5_pSol sol) {
     }
   }
 
+  if(!mesh->info.isosafe){
   do {
     nc = 0;
     /* Check snapping did not lead to a nonmanifold situation */
@@ -749,6 +750,7 @@ int MMG3D_snpval_ls(MMG5_pMesh mesh,MMG5_pSol sol) {
     }
   }
   while ( nc );
+  }
 
   if ( (abs(mesh->info.imprim) > 5 || mesh->info.ddebug) && ns+nc > 0 )
     fprintf(stdout,"     %8" MMG5_PRId " points snapped, %" MMG5_PRId " corrected\n",ns,nc);
@@ -2266,7 +2268,7 @@ int MMG3D_mmg3d2(MMG5_pMesh mesh,MMG5_pSol sol,MMG5_pSol met) {
     return 0;
   }
   
-  /* Reset the mesh->info.isoref field everywhere it appears */
+  ///* Reset the mesh->info.isoref field everywhere it appears */
   if ( !MMG3D_resetRef(mesh) ) {
     fprintf(stderr,"\n  ## Problem in resetting references. Exit program.\n");
     return 0;
