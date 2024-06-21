@@ -129,13 +129,21 @@ MMG5_int MMG3D_bdryBuild(MMG5_pMesh mesh) {
       pt   = &mesh->tetra[k];
       if ( MG_EOK(pt) &&  pt->xt ) {
         for (i=0; i<6; i++) {
-          if ( mesh->xtetra[pt->xt].edg[i] ||
-               ( mesh->xtetra[pt->xt].tag[i] & MG_REQ ||
-                 MG_EDG(mesh->xtetra[pt->xt].tag[i])) )
-            if ( !MMG5_hEdge(mesh,&mesh->htab,pt->v[MMG5_iare[i][0]],pt->v[MMG5_iare[i][1]],
-                             mesh->xtetra[pt->xt].edg[i],mesh->xtetra[pt->xt].tag[i]))
-              return -1;
-        }
+            if(mesh->info.isosafe){ 
+                  if ( mesh->xtetra[pt->xt].edg[i] ||
+                         MG_EDG(mesh->xtetra[pt->xt].tag[i]) )
+                    if ( !MMG5_hEdge(mesh,&mesh->htab,pt->v[MMG5_iare[i][0]],pt->v[MMG5_iare[i][1]],
+                                     mesh->xtetra[pt->xt].edg[i],mesh->xtetra[pt->xt].tag[i]))
+                      return -1;
+            }   else {  
+                  if ( mesh->xtetra[pt->xt].edg[i] ||
+                       ( mesh->xtetra[pt->xt].tag[i] & MG_REQ ||
+                         MG_EDG(mesh->xtetra[pt->xt].tag[i])) )
+                    if ( !MMG5_hEdge(mesh,&mesh->htab,pt->v[MMG5_iare[i][0]],pt->v[MMG5_iare[i][1]],
+                                     mesh->xtetra[pt->xt].edg[i],mesh->xtetra[pt->xt].tag[i]))
+                      return -1;
+                }
+            }
       }
     }
 
@@ -1228,6 +1236,7 @@ int MMG3D_mmg3dls(MMG5_pMesh mesh,MMG5_pSol sol,MMG5_pSol umet) {
   tminit(ctim,TIMEMAX);
   chrono(ON,&(ctim[0]));
 
+
   /* Check options */
   if ( mesh->info.lag > -1 ) {
     fprintf(stderr,"\n  ## ERROR: LAGRANGIAN MODE UNAVAILABLE (MMG3D_IPARAM_lag):\n"
@@ -1307,6 +1316,10 @@ int MMG3D_mmg3dls(MMG5_pMesh mesh,MMG5_pSol sol,MMG5_pSol umet) {
     fprintf(stdout,"  -- INPUT DATA COMPLETED.     %s\n",stim);
 
   chrono(ON,&(ctim[2]));
+  
+  // ISOSAFE mode: no edge relabelling + less snapping
+  if(mesh->info.isosafe)
+      fprintf(stdout,"\n=========== ISOSAFE MODE ==================="); 
 
   if ( mesh->info.imprim > 0 ) {
     fprintf(stdout,"\n  -- PHASE 1 : ISOSURFACE DISCRETIZATION\n");
@@ -1379,7 +1392,7 @@ int MMG3D_mmg3dls(MMG5_pMesh mesh,MMG5_pSol sol,MMG5_pSol umet) {
       _LIBMMG5_RETURN(mesh,met,sol,MMG5_STRONGFAILURE);
     }
   }
-
+//
   /* mesh analysis */
   if ( !MMG3D_analys(mesh) ) {
     if ( mettofree ) { MMG5_DEL_MEM(mesh,met->m);MMG5_SAFE_FREE (met); }
@@ -1406,28 +1419,28 @@ int MMG3D_mmg3dls(MMG5_pMesh mesh,MMG5_pSol sol,MMG5_pSol umet) {
     if ( !MMG5_unscaleMesh(mesh,met,sol) )    _LIBMMG5_RETURN(mesh,met,sol,MMG5_STRONGFAILURE);
     MMG5_RETURN_AND_PACK(mesh,sol,met,MMG5_LOWFAILURE);
   }
-
-#ifdef MMG_PATTERN
-  if ( !MMG5_mmg3d1_pattern(mesh,met,NULL) ) {
-    if ( mettofree ) { MMG5_DEL_MEM(mesh,met->m);MMG5_SAFE_FREE (met); }
-    if ( !(mesh->adja) && !MMG3D_hashTetra(mesh,1) ) {
-      fprintf(stderr,"\n  ## Hashing problem. Invalid mesh.\n");
-      _LIBMMG5_RETURN(mesh,met,sol,MMG5_STRONGFAILURE);
-    }
-    if ( !MMG5_unscaleMesh(mesh,met,sol) )    _LIBMMG5_RETURN(mesh,met,sol,MMG5_STRONGFAILURE);
-    MMG5_RETURN_AND_PACK(mesh,sol,met,MMG5_LOWFAILURE);
-  }
-#else
-  if ( !MMG5_mmg3d1_pattern(mesh,met,NULL) ) {
-    if ( mettofree ) { MMG5_DEL_MEM(mesh,met->m);MMG5_SAFE_FREE (met); }
-    if ( !(mesh->adja) && !MMG3D_hashTetra(mesh,1) ) {
-      fprintf(stderr,"\n  ## Hashing problem. Invalid mesh.\n");
-      _LIBMMG5_RETURN(mesh,met,sol,MMG5_STRONGFAILURE);
-    }
-    if ( !MMG5_unscaleMesh(mesh,met,sol) )    _LIBMMG5_RETURN(mesh,met,sol,MMG5_STRONGFAILURE);
-    MMG5_RETURN_AND_PACK(mesh,sol,met,MMG5_LOWFAILURE);
-  }
-#endif
+//DISABLE
+//#ifdef MMG_PATTERN
+//  if ( !MMG5_mmg3d1_pattern(mesh,met,NULL) ) {
+//    if ( mettofree ) { MMG5_DEL_MEM(mesh,met->m);MMG5_SAFE_FREE (met); }
+//    if ( !(mesh->adja) && !MMG3D_hashTetra(mesh,1) ) {
+//      fprintf(stderr,"\n  ## Hashing problem. Invalid mesh.\n");
+//      _LIBMMG5_RETURN(mesh,met,sol,MMG5_STRONGFAILURE);
+//    }
+//    if ( !MMG5_unscaleMesh(mesh,met,sol) )    _LIBMMG5_RETURN(mesh,met,sol,MMG5_STRONGFAILURE);
+//    MMG5_RETURN_AND_PACK(mesh,sol,met,MMG5_LOWFAILURE);
+//  }
+//#else
+//  if ( !MMG5_mmg3d1_pattern(mesh,met,NULL) ) {
+//    if ( mettofree ) { MMG5_DEL_MEM(mesh,met->m);MMG5_SAFE_FREE (met); }
+//    if ( !(mesh->adja) && !MMG3D_hashTetra(mesh,1) ) {
+//      fprintf(stderr,"\n  ## Hashing problem. Invalid mesh.\n");
+//      _LIBMMG5_RETURN(mesh,met,sol,MMG5_STRONGFAILURE);
+//    }
+//    if ( !MMG5_unscaleMesh(mesh,met,sol) )    _LIBMMG5_RETURN(mesh,met,sol,MMG5_STRONGFAILURE);
+//    MMG5_RETURN_AND_PACK(mesh,sol,met,MMG5_LOWFAILURE);
+//  }
+//#endif
 
   chrono(OFF,&(ctim[4]));
   printim(ctim[4].gdif,stim);
