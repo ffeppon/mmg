@@ -1098,8 +1098,10 @@ int MMG5_hGeom(MMG5_pMesh mesh) {
         MMG5_hTag(&mesh->htab,pt->v[i1],pt->v[i2],edg,pt->tag[i]);
       }
     }
-    MMG5_DEL_MEM(mesh,mesh->edge);
-    mesh->na   = 0;
+    if(!mesh->info.isosafe){
+        MMG5_DEL_MEM(mesh,mesh->edge);
+        mesh->na   = 0;
+    }
   }
   /* else, infer special edges from information carried by triangles */
   else {
