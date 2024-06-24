@@ -1404,13 +1404,13 @@ int MMG3D_analys(MMG5_pMesh mesh) {
   }
 
   /* identify singularities */
-  if(!mesh->info.isosafe){
+  //if(!mesh->info.isosafe){
   if ( !MMG5_singul(mesh) ) {
     fprintf(stderr,"\n  ## MMG5_Singularity problem. Exit program.\n");
     MMG5_DEL_MEM(mesh,hash.item);
     return 0;
   }
-  }
+  //}
 
   if ( abs(mesh->info.imprim) > 3 || mesh->info.ddebug )
     fprintf(stdout,"  ** DEFINING GEOMETRY\n");
