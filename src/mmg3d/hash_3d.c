@@ -1219,7 +1219,7 @@ int MMG5_hGeom(MMG5_pMesh mesh) {
         kk  = adja[i] / 3;
         if ( (!kk) || pt->tag[i] & MG_NOM ) {
           if ( pt->tag[i] & MG_NOM ) {
-            if ( mesh->info.iso )
+            if ( mesh->info.iso && !mesh->info.isosafe )
               pt->edg[i] = ( pt->edg[i] != 0 ) ?  -MMG5_abs(pt->edg[i]) : mesh->info.isoref;
           }
           if ( !MMG5_hEdge(mesh,&mesh->htab,pt->v[i1],pt->v[i2],pt->edg[i],pt->tag[i]) )
