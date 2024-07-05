@@ -725,7 +725,6 @@ int MMG3D_snpval_ls(MMG5_pMesh mesh,MMG5_pSol sol) {
     }
   }
 
-  if(!mesh->info.isosafe){
   ncg = 0;
   if(!mesh->info.isosafe){
   do {
