@@ -945,8 +945,8 @@ int  MMG3D_Set_triangles(MMG5_pMesh mesh, MMG5_int *tria, MMG5_int *refs) {
     j = (i-1)*3;
     ptt = &mesh->tria[i];
     ptt->v[0] = tria[j]  ;
-    ptt->v[1] = tria[j+2];
-    ptt->v[2] = tria[j+1];
+    ptt->v[1] = tria[j+1];
+    ptt->v[2] = tria[j+2];
     if ( refs != NULL )
       ptt->ref  = refs[i-1];
   }
@@ -2238,12 +2238,7 @@ int MMG3D_Set_iparameter(MMG5_pMesh mesh, MMG5_pSol sol, int iparam,MMG5_int val
     MMG5_SAFE_CALLOC(mesh->info.par,mesh->info.npar,MMG5_Par,return 0);
 
     MMG5_int inival;
-    if ( sizeof(MMG5_int) == 8 ) {
-      inival = LONG_MAX;
-    }
-    else {
-      inival = INT_MAX;
-    }
+    inival = MMG5_INTMAX;
 
     for (k=0; k<mesh->info.npar; k++) {
       mesh->info.par[k].elt   = MMG5_Noentity;
@@ -2538,8 +2533,8 @@ int MMG3D_Set_localParameter(MMG5_pMesh mesh,MMG5_pSol sol, int typ, MMG5_int re
   return 1;
 }
 
-int MMG3D_Set_multiMat(MMG5_pMesh mesh,MMG5_pSol sol,MMG5_int ref,int split,MMG5_int rin,MMG5_int rout) {
-  return MMG5_Set_multiMat(mesh,sol,ref,split,rin,rout);
+int MMG3D_Set_multiMat(MMG5_pMesh mesh,MMG5_pSol sol,MMG5_int ref,int split,MMG5_int rmin,MMG5_int rplus) {
+  return MMG5_Set_multiMat(mesh,sol,ref,split,rmin,rplus);
 }
 
 int MMG3D_Set_lsBaseReference(MMG5_pMesh mesh,MMG5_pSol sol,MMG5_int br){
