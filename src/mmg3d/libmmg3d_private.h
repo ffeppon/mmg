@@ -160,6 +160,14 @@ extern "C" {
 #define MMG3D_VOLFRAC      1.e-5
 #define MMG3D_MOVSTEP 0.1
 
+/** Copies the contents of fromV[fromC] to toV[toC] and updates toC */
+#define MMG_ARGV_APPEND(fromV,toV,fromC,toC,on_failure)   do {  \
+    MMG5_SAFE_MALLOC(toV[ toC ], strlen( fromV[ fromC ] ) + 1, char,    \
+                     on_failure);                                       \
+    memcpy( toV[ toC ], fromV[ fromC ], (strlen( fromV[ fromC ] ) + 1)*sizeof(char) ); \
+    ++(toC);                                                            \
+  }while(0)
+
 /** \brief next vertex of tetra: {1,2,3,0,1,2,3} */
 static const uint8_t MMG5_inxt3[7] = { 1,2,3,0,1,2,3 };
 /** \brief previous vertex of tetra: {3,0,1,2,3,0,1} */
@@ -258,9 +266,11 @@ void MMG3D_coquilFaceSecondLoopInit(MMG5_pMesh mesh,MMG5_int piv,int8_t *iface,i
 void MMG5_coquilFaceErrorMessage(MMG5_pMesh mesh, MMG5_int k1, MMG5_int k2);
 int16_t MMG5_coquilTravel(MMG5_pMesh,MMG5_int,MMG5_int,MMG5_int*,MMG5_int*,int8_t*,int8_t*);
 int16_t MMG5_openCoquilTravel(MMG5_pMesh,MMG5_int,MMG5_int,MMG5_int*,MMG5_int*,int8_t*,int8_t*);
+int  MMG3D_get_shellEdgeTag(MMG5_pMesh,MMG5_int,int8_t,int16_t*,MMG5_int *);
 int  MMG5_settag(MMG5_pMesh,MMG5_int,int,int16_t,int);
 int  MMG5_deltag(MMG5_pMesh,MMG5_int,int,int16_t);
 int  MMG5_setNmTag(MMG5_pMesh mesh, MMG5_Hash *hash);
+int  MMG5_setVertexNmTag(MMG5_pMesh mesh,int func(int8_t) );
 int  MMG5_chkcol_int(MMG5_pMesh,MMG5_pSol,MMG5_int,int8_t,int8_t,int64_t*,int,int8_t);
 int  MMG5_chkcol_bdy(MMG5_pMesh,MMG5_pSol,MMG5_int,int8_t,int8_t,int64_t*,int,MMG5_int*,int,MMG5_int,MMG5_int,int8_t,int,int8_t);
 int  MMG3D_chkmanicoll(MMG5_pMesh,MMG5_int,int,int,MMG5_int,MMG5_int,MMG5_int,MMG5_int,int8_t,int8_t);
@@ -311,24 +321,31 @@ int  MMG3D_update_xtetra ( MMG5_pMesh mesh );
 int  MMG5_mmg3dChkmsh(MMG5_pMesh,int,MMG5_int);
 int  MMG3D_setMeshSize_initData(MMG5_pMesh,MMG5_int,MMG5_int,MMG5_int,MMG5_int,MMG5_int,MMG5_int);
 int  MMG3D_setMeshSize_alloc(MMG5_pMesh);
+void MMG3D_split1_cfg(MMG5_int flag,uint8_t *tau,const uint8_t **taued);
 int  MMG3D_split1_sim(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,MMG5_int vx[6]);
 int  MMG5_split1(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,MMG5_int vx[6],int8_t metRidTyp);
 int  MMG5_split1b(MMG5_pMesh,MMG5_pSol,int64_t*,int,MMG5_int,int,int8_t,int8_t);
 MMG5_int  MMG5_splitedg(MMG5_pMesh mesh, MMG5_pSol met,MMG5_int iel, int iar, double crit);
+void MMG3D_split2sf_cfg(MMG5_int flag,MMG5_int v[4],uint8_t *tau,const uint8_t **taued,uint8_t *imin);
 int  MMG3D_split2sf_sim(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,MMG5_int vx[6]);
 int  MMG5_split2sf(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,MMG5_int vx[6],int8_t);
+int  MMG5_split2sf_globNum(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,MMG5_int vx[6],MMG5_int vGlobNum[4],int8_t metRidTyp);
 int  MMG3D_split2_sim(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,MMG5_int vx[6]);
 int  MMG5_split2(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,MMG5_int vx[6],int8_t);
 int  MMG3D_split3_sim(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,MMG5_int vx[6]);
 int  MMG5_split3(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,MMG5_int vx[6],int8_t);
+void MMG3D_split3cone_cfg(MMG5_int flag,MMG5_int v[4],uint8_t tau[4],const uint8_t **taued, uint8_t *ia,uint8_t *ib);
 int  MMG3D_split3cone_sim(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,MMG5_int vx[6]);
 int  MMG5_split3cone(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,MMG5_int vx[6],int8_t);
+int  MMG5_split3cone_globNum(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,MMG5_int vx[6],MMG5_int vGlobNum[4],int8_t metRidTyp);
 int  MMG3D_split3op_sim(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,MMG5_int vx[6]);
 int  MMG5_split3op(MMG5_pMesh mesh, MMG5_pSol met, MMG5_int k, MMG5_int vx[6],int8_t);
 int  MMG3D_split4sf_sim(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,MMG5_int vx[6]);
 int  MMG5_split4sf(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,MMG5_int vx[6],int8_t);
+void MMG3D_split4op_cfg(MMG5_int flag,MMG5_int v[4],uint8_t tau[4],const uint8_t **taued, uint8_t *imin01,uint8_t *imin23);
 int  MMG3D_split4op_sim(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,MMG5_int vx[6]);
 int  MMG5_split4op(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,MMG5_int vx[6],int8_t);
+int  MMG5_split4op_globNum(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,MMG5_int vx[6],MMG5_int vGlobNum[4],int8_t metRidTyp);
 int  MMG3D_split5_sim(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,MMG5_int vx[6]);
 int  MMG5_split5(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,MMG5_int vx[6],int8_t);
 int  MMG3D_split6_sim(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,MMG5_int vx[6]);
@@ -491,6 +508,10 @@ MMG5_int  MMG5_movtet(MMG5_pMesh mesh,MMG5_pSol met,MMG3D_pPROctree PROctree,
 MMG5_int  MMG5_swpmsh(MMG5_pMesh mesh,MMG5_pSol met,MMG3D_pPROctree PROctree, int);
 MMG5_int  MMG5_swptet(MMG5_pMesh mesh,MMG5_pSol met,double,double,MMG3D_pPROctree, int,MMG5_int);
 
+/* libmmg3d_tools.c */
+void MMG5_argv_cleanup( char **mmgArgv, int mmgArgc );
+int MMG3D_storeknownar(int,char*[],MMG5_pMesh,MMG5_pSol,MMG5_pSol,int*, char*[]);
+
 /* pointers */
 /* init structures */
 void  MMG5_Init_parameters(MMG5_pMesh mesh);
@@ -500,8 +521,10 @@ extern double MMG5_lenedgCoor_iso(double*, double*, double*, double*);
 int    MMG3D_doSol_iso(MMG5_pMesh,MMG5_pSol);
 int    MMG3D_doSol_ani(MMG5_pMesh,MMG5_pSol);
 int    MMG5_intmet_iso(MMG5_pMesh,MMG5_pSol,MMG5_int,int8_t,MMG5_int, double);
+int    MMG5_intmet_iso_edge(MMG5_pSol,MMG5_int,MMG5_int,MMG5_int, double);
 int    MMG5_intmet_ani(MMG5_pMesh,MMG5_pSol,MMG5_int,int8_t,MMG5_int, double);
 int    MMG3D_intmet33_ani(MMG5_pMesh,MMG5_pSol,MMG5_int,int8_t,MMG5_int, double);
+int    MMG3D_intmet33_ani_edge(MMG5_pSol,MMG5_int,MMG5_int,MMG5_int, double);
 int    MMG5_interp4bar_ani(MMG5_pMesh,MMG5_pSol,MMG5_int,MMG5_int,double *);
 int    MMG5_interp4bar33_ani(MMG5_pMesh,MMG5_pSol,MMG5_int,MMG5_int,double *);
 int    MMG5_interp4bar_iso(MMG5_pMesh,MMG5_pSol,MMG5_int,MMG5_int,double *);
@@ -522,7 +545,7 @@ int MMG3D_openMesh(int imprim,const char *filename,FILE **inm,int *bin,char*,cha
 int MMG3D_loadMesh_opened(MMG5_pMesh mesh,FILE *inm,int bin);
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  *
  * Warn user that some tetrahedra of the mesh have been reoriented.
  *

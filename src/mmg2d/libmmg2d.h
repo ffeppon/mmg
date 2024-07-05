@@ -87,6 +87,7 @@ extern "C" {
     MMG2D_DPARAM_hgrad,             /*!< [val], Control gradation */
     MMG2D_DPARAM_hgradreq,          /*!< [val], Control gradation on required entites (advanced usage) */
     MMG2D_DPARAM_ls,                /*!< [val], Value of level-set */
+    MMG2D_DPARAM_xreg,              /*!< [val], Value of relaxation parameter for coordinates regularization (0<val<1) */
     MMG2D_DPARAM_rmc,               /*!< [-1/val], Remove small connex componants in level-set mode */
     MMG2D_IPARAM_nofem,             /*!< [1/0], Generate a non finite element mesh */
     MMG2D_IPARAM_isoref,            /*!< [0/n], Iso-surface boundary material reference */
@@ -123,8 +124,8 @@ extern "C" {
   LIBMMG2D_EXPORT int MMG2D_Init_mesh(const int starter,...);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the sol structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the sol structure.
  *
  * Initialize file names to their default values.
  *
@@ -137,7 +138,7 @@ extern "C" {
   LIBMMG2D_EXPORT void  MMG2D_Init_fileNames(MMG5_pMesh mesh, MMG5_pSol sol);
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  *
  * Initialization of the input parameters (stored in the Info structure).
  *
@@ -151,7 +152,7 @@ extern "C" {
 
 /* init file names */
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param meshin input mesh name.
  * \return 1.
  *
@@ -168,7 +169,7 @@ extern "C" {
  */
   LIBMMG2D_EXPORT int  MMG2D_Set_inputMeshName(MMG5_pMesh mesh, const char* meshin);
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param meshout name of the output mesh file.
  * \return 1.
  *
@@ -185,8 +186,8 @@ extern "C" {
  */
   LIBMMG2D_EXPORT int  MMG2D_Set_outputMeshName(MMG5_pMesh mesh, const char* meshout);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the sol structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the sol structure.
  * \param solin name of the input solution file.
  * \return 1.
  *
@@ -203,8 +204,8 @@ extern "C" {
  */
   LIBMMG2D_EXPORT int  MMG2D_Set_inputSolName(MMG5_pMesh mesh,MMG5_pSol sol, const char* solin);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the sol structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the sol structure.
  * \param solout name of the output solution file.
  * \return 0 if failed, 1 otherwise.
  *
@@ -221,8 +222,25 @@ extern "C" {
  */
   LIBMMG2D_EXPORT int  MMG2D_Set_outputSolName(MMG5_pMesh mesh,MMG5_pSol sol, const char* solout);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the sol structure (unused).
+ * \param mesh pointer to the mesh structure.
+ * \param fparamin name of the input parameter file.
+ * \return 1.
+ *
+ * Set the name of input parameter file.
+ *
+ * \remark Fortran interface:
+ * >   SUBROUTINE MMG2D_SET_INPUTPARAMNAME(mesh,fparamin,strlen0,retval)\n
+ * >     MMG5_DATA_PTR_T, INTENT(INOUT) :: mesh\n
+ * >     CHARACTER(LEN=*), INTENT(IN)   :: fparamin\n
+ * >     INTEGER, INTENT(IN)            :: strlen0\n
+ * >     INTEGER, INTENT(OUT)           :: retval\n
+ * >   END SUBROUTINE\n
+ *
+ */
+  LIBMMG2D_EXPORT int  MMG2D_Set_inputParamName(MMG5_pMesh mesh, const char* fparamin);
+/**
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the sol structure (unused).
  * \param iparam integer parameter to set (see \a MMG2D_Param structure).
  * \param val value for the parameter.
  * \return 0 if failed, 1 otherwise.
@@ -242,8 +260,8 @@ extern "C" {
   LIBMMG2D_EXPORT int MMG2D_Set_iparameter(MMG5_pMesh mesh, MMG5_pSol sol, int iparam, MMG5_int val);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the sol structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the sol structure.
  * \param dparam double parameter to set (see \a MMG2D_Param structure).
  * \param val value of the parameter.
  * \return 0 if failed, 1 otherwise.
@@ -263,8 +281,8 @@ extern "C" {
   LIBMMG2D_EXPORT int MMG2D_Set_dparameter(MMG5_pMesh mesh, MMG5_pSol sol, int dparam, double val);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the sol structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the sol structure.
  * \param typ type of entity (triangle, edge,...).
  * \param ref reference of the entity.
  * \param hmin minimal edge size.
@@ -290,8 +308,8 @@ extern "C" {
                                                 MMG5_int ref,double hmin,double hmax,double hausd);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the sol structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the sol structure.
  * \param ref input tetra reference.
  * \param split MMG5_MMAT_NoSplit if the entity must not be splitted, MMG5_MMAT_Split otherwise
  * \param rin internal reference after ls discretization
@@ -313,8 +331,8 @@ extern "C" {
                                           MMG5_int rin, MMG5_int rex);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the sol structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the sol structure.
  * \param br new level-set base reference.
  * \return 0 if failed, 1 otherwise.
  *
@@ -336,7 +354,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
 
 /* init structure datas */
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param np number of vertices.
  * \param nt number of triangles.
  * \param nquad number of quads.
@@ -357,8 +375,8 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  */
   LIBMMG2D_EXPORT int  MMG2D_Set_meshSize(MMG5_pMesh mesh, MMG5_int np, MMG5_int nt, MMG5_int nquad, MMG5_int na);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the sol structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the sol structure.
  * \param typEntity type of solutions entities (vertices, triangles...).
  * \param np number of solutions.
  * \param typSol type of solution (scalar, vectorial...).
@@ -381,8 +399,8 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
   LIBMMG2D_EXPORT int MMG2D_Set_solSize(MMG5_pMesh mesh, MMG5_pSol sol, int typEntity,
                                         MMG5_int np, int typSol);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward an allocatable sol structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to an allocatable sol structure.
  * \param nsols number of solutions per entity
  * \param nentities number of entities
  * \param typSol    Array of size nsol listing the type of the solutions
@@ -407,7 +425,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
   LIBMMG2D_EXPORT int MMG2D_Set_solsAtVerticesSize(MMG5_pMesh mesh, MMG5_pSol *sol,int nsols,
                                                    MMG5_int nentities, int *typSol);
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param c0 coordinate of the point along the first dimension.
  * \param c1 coordinate of the point along the second dimension.
  * \param ref point reference.
@@ -429,7 +447,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
   LIBMMG2D_EXPORT int  MMG2D_Set_vertex(MMG5_pMesh mesh, double c0, double c1,
                                         MMG5_int ref,MMG5_int pos);
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param vertices table of the points coor.
  * The coordinates of the \f$i^{th}\f$ point are stored in
  * vertices[(i-1)*2]\@2
@@ -452,7 +470,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  */
   LIBMMG2D_EXPORT int  MMG2D_Set_vertices(MMG5_pMesh mesh, double *vertices,MMG5_int *refs);
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param k vertex index.
  * \return 1.
  *
@@ -469,7 +487,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  */
   LIBMMG2D_EXPORT int  MMG2D_Set_corner(MMG5_pMesh mesh, MMG5_int k);
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param k vertex index.
  * \return 1.
  *
@@ -487,7 +505,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
   LIBMMG2D_EXPORT int  MMG2D_Unset_corner(MMG5_pMesh mesh, MMG5_int k);
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param k vertex index.
  * \return 1.
  *
@@ -504,7 +522,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
   LIBMMG2D_EXPORT int  MMG2D_Set_requiredVertex(MMG5_pMesh mesh, MMG5_int k);
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param k vertex index.
  * \return 1.
  *
@@ -521,7 +539,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
   LIBMMG2D_EXPORT int  MMG2D_Unset_requiredVertex(MMG5_pMesh mesh, MMG5_int k);
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param v0 first vertex of triangle.
  * \param v1 second vertex of triangle.
  * \param v2 third vertex of triangle.
@@ -543,10 +561,10 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
   LIBMMG2D_EXPORT int MMG2D_Set_triangle(MMG5_pMesh mesh, MMG5_int v0, MMG5_int v1,
                                          MMG5_int v2, MMG5_int ref, MMG5_int pos);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param tria pointer toward the table of the tria vertices.
+ * \param mesh pointer to the mesh structure.
+ * \param tria pointer to the table of the tria vertices.
  * Vertices of the \f$i^{th}\f$ tria are stored in tria[(i-1)*3]\@3.
- * \param refs pointer toward the table of the triangle references.
+ * \param refs pointer to the table of the triangle references.
  * refs[i-1] is the ref of the \f$i^{th}\f$ tria.
  * \return 0 if failed, 1 otherwise.
  *
@@ -564,7 +582,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
   LIBMMG2D_EXPORT int  MMG2D_Set_triangles(MMG5_pMesh mesh, MMG5_int *tria, MMG5_int *refs);
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param k triangle index.
  * \return 1.
  *
@@ -581,7 +599,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
   LIBMMG2D_EXPORT int  MMG2D_Set_requiredTriangle(MMG5_pMesh mesh, MMG5_int k);
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param k triangle index.
  * \return 1.
  *
@@ -598,7 +616,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
   LIBMMG2D_EXPORT int  MMG2D_Unset_requiredTriangle(MMG5_pMesh mesh, MMG5_int k);
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param v0 first vertex of quadrilateral.
  * \param v1 second vertex of quadrilateral.
  * \param v2 third vertex of quadrilateral.
@@ -622,7 +640,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
                                                MMG5_int v2, MMG5_int v3, MMG5_int ref, MMG5_int pos);
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param quadra vertices of the quadrilaterals of the mesh
  * Vertices of the \f$i^{th}\f$ quadrilateral are stored in quadra[(i-1)*4]\@4.
  * \param refs table of the quadrangles references.
@@ -645,7 +663,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
                                                 MMG5_int *refs);
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param v0 first vertex of edge.
  * \param v1 second vertex of edge.
  * \param ref edge reference.
@@ -666,8 +684,8 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  */
   LIBMMG2D_EXPORT int MMG2D_Set_edge(MMG5_pMesh mesh, MMG5_int v0, MMG5_int v1, MMG5_int ref, MMG5_int pos);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param edges pointer toward the array of edges.
+ * \param mesh pointer to the mesh structure.
+ * \param edges pointer to the array of edges.
  * Vertices of the \f$i^{th}\f$ edge are stored in edge[(i-1)*2]\@2.
  * \param refs edges references. refs[i-1] is the ref of the \f$i^{th}\f$ edge.
  * \return 0 if failed, 1 otherwise.
@@ -684,7 +702,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  */
   LIBMMG2D_EXPORT int MMG2D_Set_edges(MMG5_pMesh mesh, MMG5_int *edges, MMG5_int* refs);
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param k edge index.
  * \return 1.
  *
@@ -700,7 +718,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  */
   LIBMMG2D_EXPORT int  MMG2D_Set_requiredEdge(MMG5_pMesh mesh, MMG5_int k);
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param k edge index.
  * \return 1.
  *
@@ -716,7 +734,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  */
   LIBMMG2D_EXPORT int  MMG2D_Unset_requiredEdge(MMG5_pMesh mesh, MMG5_int k);
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param k edge index.
  * \return 1.
  *
@@ -732,7 +750,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  */
   LIBMMG2D_EXPORT int  MMG2D_Set_parallelEdge(MMG5_pMesh mesh, MMG5_int k);
 /**
- * \param met pointer toward the sol structure.
+ * \param met pointer to the sol structure.
  * \param s solution scalar value.
  * \param pos position of the solution in the mesh.
  * \return 0 if failed, 1 otherwise.
@@ -751,7 +769,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  */
   LIBMMG2D_EXPORT int MMG2D_Set_scalarSol(MMG5_pSol met, double s, MMG5_int pos);
 /**
- * \param met pointer toward the sol structure.
+ * \param met pointer to the sol structure.
  * \param s table of the scalar solutions values.
  * s[i-1] is the solution at vertex i.
  * \return 0 if failed, 1 otherwise.
@@ -768,7 +786,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  */
   LIBMMG2D_EXPORT int  MMG2D_Set_scalarSols(MMG5_pSol met, double *s);
 /**
- * \param met pointer toward the sol structure.
+ * \param met pointer to the sol structure.
  * \param vx x value of the vectorial solution.
  * \param vy y value of the vectorial solution.
  * \param pos position of the solution in the mesh (begin to 1).
@@ -789,7 +807,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
   LIBMMG2D_EXPORT int MMG2D_Set_vectorSol(MMG5_pSol met, double vx,double vy,
                                           MMG5_int pos);
 /**
- * \param met pointer toward the sol structure.
+ * \param met pointer to the sol structure.
  * \param sols table of the vectorial solutions
  * sols[2*(i-1)]\@2 is the solution at vertex i
  * \return 0 if failed, 1 otherwise.
@@ -806,7 +824,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  */
   LIBMMG2D_EXPORT int MMG2D_Set_vectorSols(MMG5_pSol met, double *sols);
 /**
- * \param met pointer toward the sol structure.
+ * \param met pointer to the sol structure.
  * \param m11 value at position (1,1) in the solution tensor.
  * \param m12 value at position (1,2) in the solution tensor.
  * \param m22 value at position (2,2) in the solution tensor.
@@ -828,7 +846,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
   LIBMMG2D_EXPORT int MMG2D_Set_tensorSol(MMG5_pSol met, double m11, double m12, double m22,
                                           MMG5_int pos);
 /**
- * \param met pointer toward the sol structure.
+ * \param met pointer to the sol structure.
  * \param sols table of the tensorial solutions.
  * sols[3*(i-1)]\@3 is the solution at vertex i
  * \return 0 if failed, 1 otherwise.
@@ -846,7 +864,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  */
   LIBMMG2D_EXPORT int MMG2D_Set_tensorSols(MMG5_pSol met, double *sols);
 /**
- * \param sol pointer toward the array of solutions
+ * \param sol pointer to the array of solutions
  * \param i position of the solution field that we want to set.
  * \param s solution(s) at mesh vertex \a pos.
  * \param pos index of the vertex on which we set the solution.
@@ -868,7 +886,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  */
   LIBMMG2D_EXPORT int  MMG2D_Set_ithSol_inSolsAtVertices(MMG5_pSol sol,int i, double* s,MMG5_int pos);
 /**
- * \param sol pointer toward the array of solutions
+ * \param sol pointer to the array of solutions
  * \param i position of the solution field that we want to set.
  * \param s table of the solutions at mesh vertices. The solution at vertex \a k
  * is given by s[k-1] for a scalar sol, s[2*(k-1)]\@2 for a vectorial solution
@@ -892,11 +910,11 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
 
 /** recover datas */
 /**
- * \param mesh pointer toward the mesh structure.
- * \param np pointer toward the number of vertices.
- * \param nt pointer toward the number of triangles.
- * \param nquad pointer toward the number of quads.
- * \param na pointer toward the number of edges.
+ * \param mesh pointer to the mesh structure.
+ * \param np pointer to the number of vertices.
+ * \param nt pointer to the number of triangles.
+ * \param nquad pointer to the number of quads.
+ * \param na pointer to the number of edges.
  * \return 1.
  *
  * Get the number of vertices, triangles and edges of the mesh.
@@ -911,11 +929,11 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  */
   LIBMMG2D_EXPORT int  MMG2D_Get_meshSize(MMG5_pMesh mesh, MMG5_int* np, MMG5_int* nt, MMG5_int* nquad, MMG5_int* na);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the sol structure.
- * \param typEntity pointer toward the type of entities to which solutions are applied.
- * \param np pointer toward the number of solutions.
- * \param typSol pointer toward the type of the solutions (scalar, vectorial...)
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the sol structure.
+ * \param typEntity pointer to the type of entities to which solutions are applied.
+ * \param np pointer to the number of solutions.
+ * \param typSol pointer to the type of the solutions (scalar, vectorial...)
  * \return 1.
  *
  * Get the solution number, dimension and type.
@@ -932,9 +950,9 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  LIBMMG2D_EXPORT int  MMG2D_Get_solSize(MMG5_pMesh mesh, MMG5_pSol sol, int* typEntity, MMG5_int* np,
                                         int* typSol);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward an array of sol structure.
- * \param nentities pointer toward the number of entities.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to an array of sol structure.
+ * \param nentities pointer to the number of entities.
  * \param typSol array of size MMG5_NSOL_MAX to store type of each solution
  * (scalar, vector..).
  *
@@ -955,12 +973,12 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
   LIBMMG2D_EXPORT int  MMG2D_Get_solsAtVerticesSize(MMG5_pMesh mesh, MMG5_pSol* sol,int *nsols,
                                                     MMG5_int* nentities,int* typSol);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param c0 pointer toward the coordinate of the point along the first dimension.
- * \param c1 pointer toward the coordinate of the point along the second dimension.
+ * \param mesh pointer to the mesh structure.
+ * \param c0 pointer to the coordinate of the point along the first dimension.
+ * \param c1 pointer to the coordinate of the point along the second dimension.
  * \param ref pointer to the point reference.
- * \param isCorner pointer toward the flag saying if point is corner.
- * \param isRequired pointer toward the flag saying if point is required.
+ * \param isCorner pointer to the flag saying if point is corner.
+ * \param isRequired pointer to the flag saying if point is required.
  * \return 1.
  *
  * Get coordinates \a c0, \a c1 and reference \a ref of
@@ -979,12 +997,12 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
   LIBMMG2D_EXPORT int  MMG2D_Get_vertex(MMG5_pMesh mesh, double* c0, double* c1, MMG5_int* ref,
                                         int* isCorner, int* isRequired);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param c0 pointer toward the coordinate of the point along the first dimension.
- * \param c1 pointer toward the coordinate of the point along the second dimension.
+ * \param mesh pointer to the mesh structure.
+ * \param c0 pointer to the coordinate of the point along the first dimension.
+ * \param c1 pointer to the coordinate of the point along the second dimension.
  * \param ref pointer to the point reference.
- * \param isCorner pointer toward the flag saying if point is corner.
- * \param isRequired pointer toward the flag saying if point is required.
+ * \param isCorner pointer to the flag saying if point is corner.
+ * \param isRequired pointer to the flag saying if point is required.
  * \param idx index of point to get.
  * \return 1.
  *
@@ -1004,16 +1022,16 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
   LIBMMG2D_EXPORT int  MMG2D_GetByIdx_vertex(MMG5_pMesh mesh, double* c0, double* c1, MMG5_int* ref,
                                              int* isCorner, int* isRequired,MMG5_int idx);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param vertices pointer toward the table of the points coordinates.
+ * \param mesh pointer to the mesh structure.
+ * \param vertices pointer to the table of the points coordinates.
  * The coordinates of the \f$i^{th}\f$ point are stored in
  * vertices[(i-1)*2]\@2.
  * \param refs pointer to the table of the point references.
  * The ref of the \f$i^th\f$ point is stored in refs[i-1].
- * \param areCorners pointer toward the table of the flags saying if
+ * \param areCorners pointer to the table of the flags saying if
  * points are corners.
  * areCorners[i-1]=1 if the \f$i^{th}\f$ point is corner.
- * \param areRequired pointer toward the table of flags saying if points
+ * \param areRequired pointer to the table of flags saying if points
  * are required. areRequired[i-1]=1 if the \f$i^{th}\f$ point is required.
  * \return 1.
  *
@@ -1034,12 +1052,12 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
   LIBMMG2D_EXPORT int  MMG2D_Get_vertices(MMG5_pMesh mesh, double* vertices, MMG5_int* refs,
                                           int* areCorners, int* areRequired);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param v0 pointer toward the first vertex of triangle.
- * \param v1 pointer toward the second vertex of triangle.
- * \param v2 pointer toward the third vertex of triangle.
- * \param ref pointer toward the triangle reference.
- * \param isRequired pointer toward the flag saying if triangle is required.
+ * \param mesh pointer to the mesh structure.
+ * \param v0 pointer to the first vertex of triangle.
+ * \param v1 pointer to the second vertex of triangle.
+ * \param v2 pointer to the third vertex of triangle.
+ * \param ref pointer to the triangle reference.
+ * \param isRequired pointer to the flag saying if triangle is required.
  * \return 0 if failed, 1 otherwise.
  *
  * Get vertices \a v0,\a v1,\a v2 and reference \a ref of next
@@ -1059,12 +1077,12 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
                                          MMG5_int* v1, MMG5_int* v2, MMG5_int* ref
                                          ,int* isRequired);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param tria pointer toward the table of the triangles vertices
+ * \param mesh pointer to the mesh structure.
+ * \param tria pointer to the table of the triangles vertices
  * Vertices of the \f$i^{th}\f$ tria are stored in tria[(i-1)*3]\@3.
- * \param refs pointer toward the table of the triangles references.
+ * \param refs pointer to the table of the triangles references.
  * refs[i-1] is the ref of the \f$i^{th}\f$ tria.
- * \param areRequired pointer toward table of the flags saying if triangles
+ * \param areRequired pointer to table of the flags saying if triangles
  * are required. areRequired[i-1]=1 if the \f$i^{th}\f$ tria
  * is required.
  * \return 0 if failed, 1 otherwise.
@@ -1086,13 +1104,13 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
                                            int* areRequired);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param v0 pointer toward the first vertex of quadrangle.
- * \param v1 pointer toward the second vertex of quadrangle.
- * \param v2 pointer toward the third vertex of quadrangle.
- * \param v3 pointer toward the fourth vertex of quadrangle.
- * \param ref pointer toward the quadrangle reference.
- * \param isRequired pointer toward the flag saying if quadrangle is
+ * \param mesh pointer to the mesh structure.
+ * \param v0 pointer to the first vertex of quadrangle.
+ * \param v1 pointer to the second vertex of quadrangle.
+ * \param v2 pointer to the third vertex of quadrangle.
+ * \param v3 pointer to the fourth vertex of quadrangle.
+ * \param ref pointer to the quadrangle reference.
+ * \param isRequired pointer to the flag saying if quadrangle is
  *  required.
  * \return 0 if failed, 1 otherwise.
  *
@@ -1113,12 +1131,12 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
   LIBMMG2D_EXPORT int  MMG2D_Get_quadrilateral(MMG5_pMesh mesh, MMG5_int* v0, MMG5_int* v1, MMG5_int* v2,
                                                MMG5_int* v3,MMG5_int* ref, int* isRequired);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param quadra pointer toward the table of the quadrilaterals vertices.
+ * \param mesh pointer to the mesh structure.
+ * \param quadra pointer to the table of the quadrilaterals vertices.
  * Vertices of the \f$i^{th}\f$ quadrangle are stored in quadra[(i-1)*4]\@4.
- * \param refs pointer toward the table of the quadrlaterals references.
+ * \param refs pointer to the table of the quadrlaterals references.
  * References of the \f$i^{th}\f$ quad is stored in refs[i-1].
- * \param areRequired pointer toward the table of the flags saying if the
+ * \param areRequired pointer to the table of the flags saying if the
  *  quadrilaterals are required. areRequired[i-1]=1 if the \f$i^{th}\f$ quad
  * is required.
  * \return 0 if failed, 1 otherwise.
@@ -1141,12 +1159,12 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  LIBMMG2D_EXPORT int  MMG2D_Get_quadrilaterals(MMG5_pMesh mesh, MMG5_int* quadra,MMG5_int* refs,
                                                int* areRequired);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param e0 pointer toward the first extremity of the edge.
- * \param e1 pointer toward the second  extremity of the edge.
- * \param ref pointer toward the edge reference.
- * \param isRidge pointer toward the flag saying if the edge is ridge.
- * \param isRequired pointer toward the flag saying if the edge is required.
+ * \param mesh pointer to the mesh structure.
+ * \param e0 pointer to the first extremity of the edge.
+ * \param e1 pointer to the second  extremity of the edge.
+ * \param ref pointer to the edge reference.
+ * \param isRidge pointer to the flag saying if the edge is ridge.
+ * \param isRequired pointer to the flag saying if the edge is required.
  * \return 0 if failed, 1 otherwise.
  *
  * Get extremities \a e0, \a e1 and reference \a ref of next boundary edge of
@@ -1167,8 +1185,8 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
   LIBMMG2D_EXPORT int MMG2D_Get_edge(MMG5_pMesh mesh, MMG5_int* e0, MMG5_int* e1, MMG5_int* ref
                                      ,int* isRidge, int* isRequired);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param edges pointer toward the array of edges.
+ * \param mesh pointer to the mesh structure.
+ * \param edges pointer to the array of edges.
  * Vertices of the \f$i^{th}\f$ edge are stored in edge[(i-1)*2]\@2.
  * \param refs edges references. refs[i-1] is the ref of the \f$i^{th}\f$ edge.
  * \param areRidges 1 if the edge is a ridge, 0 otherwise.
@@ -1194,8 +1212,8 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
                                       int *areRidges,int *areRequired);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param met pointer toward the metric structure.
+ * \param mesh pointer to the mesh structure.
+ * \param met pointer to the metric structure.
  * \param k index of the triangle for which we want to get the quality.
  * \return the computed quality or 0. if fail.
  *
@@ -1212,8 +1230,8 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
   LIBMMG2D_EXPORT double MMG2D_Get_triangleQuality(MMG5_pMesh mesh,MMG5_pSol met, MMG5_int k);
 
 /**
- * \param met pointer toward the sol structure.
- * \param s pointer toward the scalar solution value.
+ * \param met pointer to the sol structure.
+ * \param s pointer to the scalar solution value.
  * \return 0 if failed, 1 otherwise.
  *
  * Get solution \a s of next vertex of mesh.
@@ -1228,7 +1246,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  */
   LIBMMG2D_EXPORT int  MMG2D_Get_scalarSol(MMG5_pSol met, double* s);
 /**
- * \param met pointer toward the sol structure.
+ * \param met pointer to the sol structure.
  * \param s table of the scalar solutions at mesh vertices. s[i-1] is
  * the solution at vertex i.
  * \return 0 if failed, 1 otherwise.
@@ -1245,7 +1263,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  */
   LIBMMG2D_EXPORT int  MMG2D_Get_scalarSols(MMG5_pSol met, double* s);
 /**
- * \param met pointer toward the sol structure.
+ * \param met pointer to the sol structure.
  * \param vx x value of the vectorial solution.
  * \param vy y value of the vectorial solution.
  * \return 0 if failed, 1 otherwise.
@@ -1262,7 +1280,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  */
   LIBMMG2D_EXPORT int MMG2D_Get_vectorSol(MMG5_pSol met, double* vx, double* vy);
 /**
- * \param met pointer toward the sol structure.
+ * \param met pointer to the sol structure.
  * \param sols table of the solutions at mesh vertices. sols[2*(i-1)]\@2 is
  * the solution at vertex i.
  * \return 0 if failed, 1 otherwise.
@@ -1279,10 +1297,10 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  */
   LIBMMG2D_EXPORT int MMG2D_Get_vectorSols(MMG5_pSol met, double* sols);
 /**
- * \param met pointer toward the sol structure.
- * \param m11 pointer toward the position (1,1) in the solution tensor.
- * \param m12 pointer toward the position (1,2) in the solution tensor.
- * \param m22 pointer toward the position (2,2) in the solution tensor.
+ * \param met pointer to the sol structure.
+ * \param m11 pointer to the position (1,1) in the solution tensor.
+ * \param m12 pointer to the position (1,2) in the solution tensor.
+ * \param m22 pointer to the position (2,2) in the solution tensor.
  * \return 0 if failed, 1 otherwise.
  *
  * Get tensorial solution of next vertex of mesh.
@@ -1297,7 +1315,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  */
   LIBMMG2D_EXPORT int MMG2D_Get_tensorSol(MMG5_pSol met, double *m11,double *m12,double *m22);
 /**
- * \param met pointer toward the sol structure.
+ * \param met pointer to the sol structure.
  * \param sols table of the solutions at mesh vertices.
  * sols[3*(i-1)]\@3 is the solution at vertex i.
  * \return 0 if failed, 1 otherwise.
@@ -1314,7 +1332,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  */
   LIBMMG2D_EXPORT int MMG2D_Get_tensorSols(MMG5_pSol met, double *sols);
 /**
- * \param sol pointer toward the array of solutions
+ * \param sol pointer to the array of solutions
  * \param i position of the solution field that we want to set.
  * \param s solution(s) at mesh vertex \a pos.
  * \param pos index of the vertex on which we get the solution.
@@ -1336,7 +1354,7 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
  */
   LIBMMG2D_EXPORT int MMG2D_Get_ithSol_inSolsAtVertices(MMG5_pSol sol,int i, double* s,MMG5_int pos);
 /**
- * \param sol pointer toward the array of solutions
+ * \param sol pointer to the array of solutions
  * \param i position of the solution field that we want to get.
  * \param s table of the solutions at mesh vertices. The solution at vertex \a k
  * is given by s[k-1] for a scalar sol, s[2*(k-1)]\@2 for a vectorial solution
@@ -1360,8 +1378,8 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
 
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param met pointer toward the sol structure.
+ * \param mesh pointer to the mesh structure.
+ * \param met pointer to the sol structure.
  * \return 0 if failed, 1 otherwise.
  *
  * Check if the number of given entities match with mesh and sol size
@@ -1377,8 +1395,8 @@ LIBMMG2D_EXPORT int  MMG2D_Set_lsBaseReference(MMG5_pMesh mesh, MMG5_pSol sol,MM
   LIBMMG2D_EXPORT int MMG2D_Chk_meshData(MMG5_pMesh mesh,MMG5_pSol met);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward an array of solution structure (that stores solution fields).
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to an array of solution structure (that stores solution fields).
  * \return 1
  *
  * Deallocation of an array of solution fields
@@ -1497,7 +1515,7 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT int MMG2D_Free_names(const int starter,...);
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param filename name of the readed file.
  *
  * \return 0 if file is not found, -1 if fail for another reason (mem lack, file
@@ -1517,8 +1535,9 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT int MMG2D_loadMesh(MMG5_pMesh mesh,const char * filename);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the solution structure.
+ * \param mesh pointer to the mesh structure.
+ * \param met pointer to the metric structure or the NULL pointer.
+ * \param sol pointer to the level-set structure or the NULL pointer.
  * \param filename name of file.
  *
  * \return 0 if file is not found, -1 if fail for another reason (mem lack, file
@@ -1528,18 +1547,18 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
  * read only low-order points, edges, tria and quad.
  *
  * \remark Fortran interface:
- * >   SUBROUTINE MMG2D_LOADVTPMESH(mesh,sol,filename,strlen0,retval)\n
- * >     MMG5_DATA_PTR_T, INTENT(INOUT) :: mesh,sol\n
+ * >   SUBROUTINE MMG2D_LOADVTPMESH(mesh,met,sol,filename,strlen0,retval)\n
+ * >     MMG5_DATA_PTR_T, INTENT(INOUT) :: mesh,met,sol\n
  * >     CHARACTER(LEN=*), INTENT(IN)   :: filename\n
  * >     INTEGER, INTENT(IN)            :: strlen0\n
  * >     INTEGER, INTENT(OUT)           :: retval\n
  * >   END SUBROUTINE\n
  *
  */
-  LIBMMG2D_EXPORT int MMG2D_loadVtpMesh(MMG5_pMesh mesh,MMG5_pSol sol,const char *filename);
+  LIBMMG2D_EXPORT int MMG2D_loadVtpMesh(MMG5_pMesh mesh,MMG5_pSol met,MMG5_pSol sol,const char *filename);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the solution structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the solution structure.
  * \param filename name of file.
  *
  * \return 0 if file is not found, -1 if fail for another reason (mem lack, file
@@ -1560,8 +1579,9 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT int MMG2D_loadVtpMesh_and_allData(MMG5_pMesh mesh,MMG5_pSol *sol,const char *filename);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the solution structure.
+ * \param mesh pointer to the mesh structure.
+ * \param met pointer to the metric structure or the NULL pointer.
+ * \param sol pointer to the level-set structure or the NULL pointer.
  * \param filename name of file.
  *
  * \return 0 if file is not found, -1 if fail for another reason (mem lack, file
@@ -1571,19 +1591,19 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
  * read only low-order points, edges, tria and quad.
  *
  * \remark Fortran interface:
- * >   SUBROUTINE MMG2D_LOADVTUMESH(mesh,sol,filename,strlen0,retval)\n
- * >     MMG5_DATA_PTR_T, INTENT(INOUT) :: mesh,sol\n
+ * >   SUBROUTINE MMG2D_LOADVTUMESH(mesh,met,sol,filename,strlen0,retval)\n
+ * >     MMG5_DATA_PTR_T, INTENT(INOUT) :: mesh,met,sol\n
  * >     CHARACTER(LEN=*), INTENT(IN)   :: filename\n
  * >     INTEGER, INTENT(IN)            :: strlen0\n
  * >     INTEGER, INTENT(OUT)           :: retval\n
  * >   END SUBROUTINE\n
  *
  */
- LIBMMG2D_EXPORT int MMG2D_loadVtuMesh(MMG5_pMesh mesh,MMG5_pSol sol,const char *filename);
+ LIBMMG2D_EXPORT int MMG2D_loadVtuMesh(MMG5_pMesh mesh,MMG5_pSol met,MMG5_pSol sol,const char *filename);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the solution structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the solution structure.
  * \param filename name of file.
  *
  * \return 0 if file is not found, -1 if fail for another reason (mem lack, file
@@ -1604,8 +1624,9 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
  LIBMMG2D_EXPORT int MMG2D_loadVtuMesh_and_allData(MMG5_pMesh mesh,MMG5_pSol *sol,const char *filename);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the solution structure.
+ * \param mesh pointer to the mesh structure.
+ * \param met pointer to the metric structure or the NULL pointer.
+ * \param sol pointer to the level-set structure or the NULL pointer.
  * \param filename name of file.
  *
  * \return 0 if file is not found, -1 if fail for another reason (mem lack, file
@@ -1615,19 +1636,19 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
  * read only low-order points, edges, tria and quad.
  *
  * \remark Fortran interface:
- * >   SUBROUTINE MMG2D_LOADVTKMESH(mesh,sol,filename,strlen0,retval)\n
- * >     MMG5_DATA_PTR_T, INTENT(INOUT) :: mesh,sol\n
+ * >   SUBROUTINE MMG2D_LOADVTKMESH(mesh,met,sol,filename,strlen0,retval)\n
+ * >     MMG5_DATA_PTR_T, INTENT(INOUT) :: mesh,met,sol\n
  * >     CHARACTER(LEN=*), INTENT(IN)   :: filename\n
  * >     INTEGER, INTENT(IN)            :: strlen0\n
  * >     INTEGER, INTENT(OUT)           :: retval\n
  * >   END SUBROUTINE\n
  *
  */
- LIBMMG2D_EXPORT int MMG2D_loadVtkMesh(MMG5_pMesh mesh,MMG5_pSol sol,const char *filename);
+ LIBMMG2D_EXPORT int MMG2D_loadVtkMesh(MMG5_pMesh mesh,MMG5_pSol met,MMG5_pSol sol,const char *filename);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the solution structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the solution structure.
  * \param filename name of file.
  *
  * \return 0 if file is not found, -1 if fail for another reason (mem lack, file
@@ -1648,8 +1669,8 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
  LIBMMG2D_EXPORT int MMG2D_loadVtkMesh_and_allData(MMG5_pMesh mesh,MMG5_pSol *sol,const char *filename);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the solution structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the solution structure.
  * \param filename name of file.
  *
  * \return 0 if file is not found, -1 if fail for another reason (mem lack, file
@@ -1670,8 +1691,8 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT int MMG2D_loadMshMesh(MMG5_pMesh mesh,MMG5_pSol sol,const char *filename);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward a list of solution structures.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to a list of solution structures.
  * \param filename name of file.
  *
  * \return 0 if file is not found, -1 if fail for another reason (mem lack, file
@@ -1692,8 +1713,8 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT int MMG2D_loadMshMesh_and_allData(MMG5_pMesh mesh,MMG5_pSol *sol,const char *filename);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the solution structure..
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the solution structure..
  * \param filename name of the solution file.
  *
  * \return 0 if file is not found, -1 if fail for another reason (mem lack, file
@@ -1714,7 +1735,9 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT int MMG2D_loadSol(MMG5_pMesh mesh,MMG5_pSol sol,const char * filename);
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
+ * \param met pointer to the metric structure or the NULL pointer.
+ * \param sol pointer to the level-set structure or the NULL pointer.
  * \param filename name of file.
  *
  * \return 0 if file is not found, -1 if fail for another reason (mem lack, file
@@ -1723,19 +1746,19 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
  * Read mesh data.
  *
  * \remark Fortran interface:
- * >   SUBROUTINE MMG2D_LOADGENERICMESH(mesh,sol,filename,strlen0,retval)\n
- * >     MMG5_DATA_PTR_T, INTENT(INOUT) :: mesh,sol\n
+ * >   SUBROUTINE MMG2D_LOADGENERICMESH(mesh,met,sol,filename,strlen0,retval)\n
+ * >     MMG5_DATA_PTR_T, INTENT(INOUT) :: mesh,met,sol\n
  * >     CHARACTER(LEN=*), INTENT(IN)   :: filename\n
  * >     INTEGER, INTENT(IN)            :: strlen0\n
  * >     INTEGER, INTENT(OUT)           :: retval\n
  * >   END SUBROUTINE\n
  *
  */
-  LIBMMG2D_EXPORT int MMG2D_loadGenericMesh(MMG5_pMesh mesh,MMG5_pSol sol,const char *filename);
+  LIBMMG2D_EXPORT int MMG2D_loadGenericMesh(MMG5_pMesh mesh,MMG5_pSol met,MMG5_pSol sol,const char *filename);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the solutions array
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the solutions array
  * \param filename name of file.
  *
  * \return 0 if file is not found, -1 if fail for another reason (mem lack, file
@@ -1757,7 +1780,7 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT int MMG2D_loadVect(MMG5_pMesh ,char *);
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param filename name of the readed file.
  * \return 0 or -1 if fail, 1 otherwise.
  *
@@ -1774,8 +1797,8 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
  */
   LIBMMG2D_EXPORT int MMG2D_saveMesh(MMG5_pMesh ,const char *);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the solution structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the solution structure.
  * \param filename name of file.
  * \return 0 if failed, 1 otherwise.
  *
@@ -1793,8 +1816,8 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
  */
   LIBMMG2D_EXPORT int MMG2D_saveMshMesh(MMG5_pMesh mesh,MMG5_pSol sol,const char *filename);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the solution structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the solution structure.
  * \param filename name of file.
  * \return 0 if failed, 1 otherwise.
  *
@@ -1812,8 +1835,8 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
  */
   LIBMMG2D_EXPORT int MMG2D_saveMshMesh_and_allData(MMG5_pMesh mesh,MMG5_pSol *sol,const char *filename);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the solution structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the solution structure.
  * \param filename name of file.
  * \return 0 if failed, 1 otherwise.
  *
@@ -1830,8 +1853,8 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
  */
   LIBMMG2D_EXPORT int MMG2D_saveVtkMesh(MMG5_pMesh mesh,MMG5_pSol sol,const char *filename);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the solution structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the solution structure.
  * \param filename name of file.
  * \return 0 if failed, 1 otherwise.
  *
@@ -1848,8 +1871,8 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
  */
   LIBMMG2D_EXPORT int MMG2D_saveVtkMesh_and_allData(MMG5_pMesh mesh,MMG5_pSol *sol,const char *filename);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the solution structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the solution structure.
  * \param filename name of file.
  * \return 0 if failed, 1 otherwise.
  *
@@ -1866,8 +1889,8 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
  */
   LIBMMG2D_EXPORT int MMG2D_saveVtuMesh(MMG5_pMesh mesh,MMG5_pSol sol,const char *filename);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the solution structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the solution structure.
  * \param filename name of file.
  * \return 0 if failed, 1 otherwise.
  *
@@ -1884,8 +1907,8 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
  */
   LIBMMG2D_EXPORT int MMG2D_saveVtuMesh_and_allData(MMG5_pMesh mesh,MMG5_pSol *sol,const char *filename);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the solution structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the solution structure.
  * \param filename name of file.
  * \return 0 if failed, 1 otherwise.
  *
@@ -1902,8 +1925,8 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
  */
   LIBMMG2D_EXPORT int MMG2D_saveVtpMesh(MMG5_pMesh mesh,MMG5_pSol sol,const char *filename);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the solution structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the solution structure.
  * \param filename name of file.
  * \return 0 if failed, 1 otherwise.
  *
@@ -1921,7 +1944,7 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT int MMG2D_saveVtpMesh_and_allData(MMG5_pMesh mesh,MMG5_pSol *sol,const char *filename);
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param filename name of the readed file.
  * \return 0 or -1 if fail, 1 otherwise.
  *
@@ -1939,7 +1962,7 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT int MMG2D_saveTetgenMesh(MMG5_pMesh ,const char *);
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param filename name of file.
  * \return 0 if failed, 1 otherwise.
  *
@@ -1957,8 +1980,8 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT int MMG2D_saveGenericMesh(MMG5_pMesh mesh,MMG5_pSol sol,const char *filename);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the solution structure..
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the solution structure..
  * \param filename name of the solution file.
  * \return 0 or -1 if fail, 1 otherwise.
  *
@@ -1975,8 +1998,8 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
  */
   LIBMMG2D_EXPORT int MMG2D_saveSol(MMG5_pMesh  mesh,MMG5_pSol sol ,const char *filename);
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the solutions array
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the solutions array
  * \param filename name of the solution file.
  * \return 0 or -1 if fail, 1 otherwise.
  *
@@ -1997,8 +2020,8 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT int MMG2D_saveVect(MMG5_pMesh mesh,MMG5_pSol sol,const char *filename,double lambda);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward a sol structure (metric).
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to a sol structure (metric).
  * \return \ref MMG5_SUCCESS if success, \ref MMG5_LOWFAILURE if failed
  * but a conform mesh is saved and \ref MMG5_STRONGFAILURE if failed and we
  * can't save the mesh.
@@ -2015,8 +2038,8 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT int MMG2D_mmg2dlib(MMG5_pMesh mesh,MMG5_pSol sol);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward a sol structure (metric).
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to a sol structure (metric).
  * \return \ref MMG5_SUCCESS if success, \ref MMG5_LOWFAILURE if failed
  * but a conform mesh is saved and \ref MMG5_STRONGFAILURE if failed and we
  * can't save the mesh.
@@ -2033,9 +2056,9 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT int MMG2D_mmg2dmesh(MMG5_pMesh mesh,MMG5_pSol sol);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward a sol structure (level-set).
- * \param met pointer toward a sol structure (metric).
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to a sol structure (level-set).
+ * \param met pointer to a sol structure (metric).
  * \return \ref MMG5_SUCCESS if success, \ref MMG5_LOWFAILURE if failed
  * but a conform mesh is saved and \ref MMG5_STRONGFAILURE if failed and we
  * can't save the mesh.
@@ -2053,9 +2076,9 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
  */
   LIBMMG2D_EXPORT int MMG2D_mmg2dls(MMG5_pMesh mesh,MMG5_pSol sol,MMG5_pSol met) ;
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward a sol structure (displacement).
- * \param disp pointer toward a sol (displacement for the lagrangian motion
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to a sol structure (displacement).
+ * \param disp pointer to a sol (displacement for the lagrangian motion
  * mode) structure.
  * \return \ref MMG5_SUCCESS if success, \ref MMG5_LOWFAILURE if failed
  * but a conform mesh is saved and \ref MMG5_STRONGFAILURE if failed and we
@@ -2075,7 +2098,7 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
 /* Tools for the library */
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \return 0 if fail, 1 if success.
  *
  * Print the default parameters values.
@@ -2092,9 +2115,9 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
 /**
  * \param argc number of command line arguments.
  * \param argv command line arguments.
- * \param mesh pointer toward the mesh structure.
- * \param met pointer toward a metric
- * \param sol pointer toward a level-set or displacement
+ * \param mesh pointer to the mesh structure.
+ * \param met pointer to a metric
+ * \param sol pointer to a level-set or displacement
  * \return 1 if we want to run Mmg after, 0 if not or if fail.
  *
  * Store command line arguments.
@@ -2105,8 +2128,8 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT int MMG2D_parsar(int argc,char *argv[],MMG5_pMesh mesh,MMG5_pSol met,MMG5_pSol sol);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param met pointer toward the sol structure.
+ * \param mesh pointer to the mesh structure.
+ * \param met pointer to the sol structure.
  * \return 1.
  *
  * Read local parameters file. This file must have the same name as
@@ -2123,7 +2146,7 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT int MMG2D_parsop(MMG5_pMesh mesh,MMG5_pSol met);
 
 /**
- * \param prog pointer toward the program name.
+ * \param prog pointer to the program name.
  * \param return 1 if success, 0 if fail.
  *
  * Print help for mmg2d options.
@@ -2139,8 +2162,8 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT int  MMG2D_usage(char *prog);
 
 /**
- * \param mesh pointer toward the mesh structure
- * \param met pointer toward the sol structure
+ * \param mesh pointer to the mesh structure
+ * \param met pointer to the sol structure
  * \return 1 if success
  *
  * Compute unit tensor according to the lengths of the
@@ -2156,8 +2179,8 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT extern int (*MMG2D_doSol)(MMG5_pMesh mesh ,MMG5_pSol met );
 
 /**
- * \param mesh pointer toward the mesh structure
- * \param met pointer toward the sol structure
+ * \param mesh pointer to the mesh structure
+ * \param met pointer to the sol structure
  * \return 1 if success
  *
  * Compute constant size map according to mesh->info.hsiz, mesh->info.hmin and
@@ -2173,8 +2196,8 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT int MMG2D_Set_constantSize(MMG5_pMesh mesh,MMG5_pSol met);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param met pointer toward a sol structure.
+ * \param mesh pointer to the mesh structure.
+ * \param met pointer to a sol structure.
  *
  * Set function pointers for length, caltri... depending if case is iso or aniso
  *
@@ -2187,8 +2210,8 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT void MMG2D_setfunc(MMG5_pMesh mesh,MMG5_pSol met);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param nb_edges pointer toward the number of non boundary edges.
+ * \param mesh pointer to the mesh structure.
+ * \param nb_edges pointer to the number of non boundary edges.
  * \return 0 if failed, 1 otherwise.
  *
  * Get the number of non boundary edges (for DG methods for example). An edge is
@@ -2211,10 +2234,10 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT int MMG2D_Get_numberOfNonBdyEdges(MMG5_pMesh mesh, MMG5_int* nb_edges);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param e0 pointer toward the first extremity of the edge.
- * \param e1 pointer toward the second  extremity of the edge.
- * \param ref pointer toward the edge reference.
+ * \param mesh pointer to the mesh structure.
+ * \param e0 pointer to the first extremity of the edge.
+ * \param e1 pointer to the second  extremity of the edge.
+ * \param ref pointer to the edge reference.
  * \param idx index of the non boundary edge to get (between 1 and nb_edges)
  * \return 0 if failed, 1 otherwise.
  *
@@ -2237,9 +2260,9 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
 
 /**
  * \brief Return adjacent elements of a triangle.
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param kel triangle index.
- * \param listri pointer toward the table of the indices of the three adjacent
+ * \param listri pointer to the table of the indices of the three adjacent
  * triangles of the elt \a kel (the index is 0 if there is no adjacent).
  * \return 1.
  *
@@ -2260,9 +2283,9 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
 
 /**
  * \brief Return adjacent elements of a triangle.
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param ip vertex index.
- * \param lispoi pointer toward an array of size MMG2D_LMAX that will contain
+ * \param lispoi pointer to an array of size MMG2D_LMAX that will contain
  * the indices of adjacent vertices to the vertex \a ip.
  * \return nbpoi the number of adjacent points if success, 0 if fail.
  *
@@ -2282,10 +2305,10 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
 
 /**
  * \brief Return adjacent elements of a triangle.
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param ip vertex index.
  * \param start index of a triangle holding \a ip.
- * \param lispoi pointer toward an array of size MMG2D_LMAX that will contain
+ * \param lispoi pointer to an array of size MMG2D_LMAX that will contain
  * the indices of adjacent vertices to the vertex \a ip.
  * \return nbpoi the number of adjacent points if success, 0 if fail.
  *
@@ -2304,10 +2327,10 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT MMG5_int MMG2D_Get_adjaVerticesFast(MMG5_pMesh mesh, MMG5_int ip,MMG5_int start,
                                                       MMG5_int lispoi[MMG2D_LMAX]);
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param ked index of the boundary edge.
- * \param ktri pointer toward the index of the tri (filled by the function).
- * \param ied pointer toward the index of the edge of the triangle \a ktri that
+ * \param ktri pointer to the index of the tri (filled by the function).
+ * \param ied pointer to the index of the edge of the triangle \a ktri that
  * correspond to the boundary edge \a ked.
  * \return 0 if fail, 1 otherwise
  *
@@ -2326,11 +2349,11 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
  */
   LIBMMG2D_EXPORT int MMG2D_Get_triFromEdge(MMG5_pMesh mesh, MMG5_int ked, MMG5_int *ktri, int *ied);
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param ked index of the boundary edge.
- * \param ktri pointer toward an array of size 2 to fill by the indices of the
+ * \param ktri pointer to an array of size 2 to fill by the indices of the
  * triangles that share the edge \a ked (filled by the function).
- * \param ied pointer toward an array of size two to fill by the indices of the
+ * \param ied pointer to an array of size two to fill by the indices of the
  * edge in each triangle.
  *
  * \return 0 if fail, 1 otherwise
@@ -2376,7 +2399,7 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
 
 
 /**
- * \param mesh pointer toward the mesh structure
+ * \param mesh pointer to the mesh structure
  *
  * Reset the vertices tag (be careful all the tags are deleted).
  *
@@ -2389,7 +2412,7 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT void MMG2D_Reset_verticestags(MMG5_pMesh mesh);
 
 /**
- * \param mesh pointer toward the mesh structure
+ * \param mesh pointer to the mesh structure
  *
  * Free the mesh elements (and the adjacency).
  *
@@ -2402,7 +2425,7 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT void MMG2D_Free_triangles(MMG5_pMesh mesh);
 
 /**
- * \param mesh pointer toward the mesh structure
+ * \param mesh pointer to the mesh structure
  *
  * Free the mesh edges (and the associated xpoints).
  *
@@ -2415,8 +2438,8 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT void MMG2D_Free_edges(MMG5_pMesh mesh);
 
 /**
- * \param mesh pointer toward the mesh structure
- * \param sol pointer toward the solution structure
+ * \param mesh pointer to the mesh structure
+ * \param sol pointer to the solution structure
  *
  * Free the solution.
  *
@@ -2436,9 +2459,9 @@ LIBMMG2D_EXPORT int MMG2D_Free_all(const int starter,...);
   LIBMMG2D_EXPORT void MMG2D_Set_commonFunc(void);
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param met pointer toward the metric structure.
- * \param ls pointer toward a solution structure (level-set or displacement).
+ * \param mesh pointer to the mesh structure.
+ * \param met pointer to the metric structure.
+ * \param ls pointer to a solution structure (level-set or displacement).
  *
  * \return 1 if success, 0 if fail (computed bounding box too small
  * or one af the anisotropic input metric is not valid).

@@ -44,7 +44,16 @@ IF ( NOT EXISTS ${CTEST_OUTPUT_DIR}/unwrittable8.sol)
 ENDIF()
 
 # Lists of tests that are common to mmgs and mmg3d
-FOREACH(EXEC SHRT_EXEC IN ZIP_LISTS EXECUT_MMG SHRT_EXECUT_MMG)
+## ZIP_LISTS keyword is supported since version 3.17 of CMake not yet
+## distributed by Ubuntu's APT
+## FOREACH(EXEC SHRT_EXEC IN ZIP_LISTS EXECUT_MMG SHRT_EXECUT_MMG)
+
+LIST(LENGTH EXECUT_MMG len)
+MATH(EXPR len "${len} - 1")
+
+FOREACH ( it RANGE ${len} )
+  LIST(GET EXECUT_MMG ${it} EXEC )
+  LIST(GET SHRT_EXECUT_MMG ${it} SHRT_EXEC)
 
   ###############################################################################
   #####
@@ -375,6 +384,11 @@ ADD_TEST(NAME mmg_CommandLineAni_${SHRT_EXEC}
     COMMAND ${EXEC} -v 5 -xreg
     ${MMG_CI_TESTS}/CoorRegularizationRandomCube/cubeRandom.mesh
     -out ${CTEST_OUTPUT_DIR}/CoorRegularizationRandomCube_${SHRT_EXEC}.o.meshb)
+
+  ADD_TEST( NAME mmg_CoorRegularizationRandomCube_value_${SHRT_EXEC}
+    COMMAND ${EXEC} -v 5 -xreg 0.9
+    ${MMG_CI_TESTS}/CoorRegularizationRandomCube/cubeRandom.mesh
+    -out ${CTEST_OUTPUT_DIR}/CoorRegularizationRandomCube_value_${SHRT_EXEC}.o.meshb)
 
   # -lssurf
   IF ( ${SHRT_EXEC} MATCHES "3d" )

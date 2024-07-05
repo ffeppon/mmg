@@ -90,9 +90,9 @@ inline int MMG5_intdispvol(double *v1, double *v2, double *vp, double t) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param disp pointer toward the displacement structure.
- * \param met pointer toward the metric structure.
+ * \param mesh pointer to the mesh structure.
+ * \param disp pointer to the displacement structure.
+ * \param met pointer to the metric structure.
  * \param itdeg degraded elements.
  * \param *warn \a warn is set to 1 if we don't have enough memory to complete mesh.
  * \return -1 if failed.
@@ -136,11 +136,26 @@ static MMG5_int MMG5_spllag(MMG5_pMesh mesh,MMG5_pSol disp,MMG5_pSol met,int itd
       p1 = &mesh->point[ip2];
 
       /* Skip the non-internal edges */
+
+      // Fast check but incomplete: regular boundary edges may have no tags (bdy
+      // tags are not added at new edges created during the split of boudary
+      // faces for example).
       if ( pxt && (pxt->tag[i] & MG_BDY) )  continue;
 
+      // Slower test but allowing to be sure to detect boundary edges
+      int16_t  tag = 0;
+      MMG5_int ref = 0;
+      if ( !MMG3D_get_shellEdgeTag(mesh,k,i,&tag,&ref) ) {
+        fprintf(stderr,"\n  ## Warning: %s: 0. unable to get edge info"
+                " (tetra %d).\n",__func__,MMG3D_indElt(mesh,k));
+        continue;
+      }
 
-      if( (p0->tag & MG_BDY) && (p1->tag & MG_BDY) ) continue;
+      if ( tag & MG_BDY ) {
+        continue;
+      }
 
+      /* Here we are sure to work on a non-boundary edge */
       len = (p1->c[0]-p0->c[0])*(p1->c[0]-p0->c[0])
         + (p1->c[1]-p0->c[1])*(p1->c[1]-p0->c[1])
         + (p1->c[2]-p0->c[2])*(p1->c[2]-p0->c[2]);
@@ -150,11 +165,12 @@ static MMG5_int MMG5_spllag(MMG5_pMesh mesh,MMG5_pSol disp,MMG5_pSol met,int itd
         imax = i;
       }
     }
+
     if ( imax==-1 ) {
       if ( !mmgWarn0 ){
         mmgWarn0 = 1;
-        fprintf(stderr,"\n  ## Warning: %s: all edges of tetra %" MMG5_PRId " are required"
-                " or of length null.\n",__func__,k);
+        fprintf(stderr,"\n  ## Warning: %s: No possible edge split in tetra %" MMG5_PRId
+                ".\n",__func__,MMG3D_indElt(mesh,k));
       }
       continue;
     }
@@ -263,10 +279,10 @@ static MMG5_int MMG5_spllag(MMG5_pMesh mesh,MMG5_pSol disp,MMG5_pSol met,int itd
 }
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param met pointer toward the metric structure.
+ * \param mesh pointer to the mesh structure.
+ * \param met pointer to the metric structure.
  * \param crit coefficient of quality improvment.
- * \param PROctree pointer toward the PROctree structure in delaunay mode and
+ * \param PROctree pointer to the PROctree structure in delaunay mode and
  * toward the \a NULL pointer otherwise.
  * \param itdeg degraded elements.
  *
@@ -318,8 +334,8 @@ MMG5_int MMG5_swptetlag(MMG5_pMesh mesh,MMG5_pSol met,double crit,MMG3D_pPROctre
 }
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param met pointer toward the metric structure.
+ * \param mesh pointer to the mesh structure.
+ * \param met pointer to the metric structure.
  * \param itdeg degraded elements.
  * \return -1 if failed, number of moved points otherwise.
  *
@@ -377,8 +393,8 @@ MMG5_int MMG5_movtetlag(MMG5_pMesh mesh,MMG5_pSol met, int itdeg) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param met pointer toward the metric structure.
+ * \param mesh pointer to the mesh structure.
+ * \param met pointer to the metric structure.
  * \param itdeg degraded elements.
  * \return -1 if failed.
  * \return number of collapsed points.
@@ -458,8 +474,8 @@ static MMG5_int MMG5_coltetlag(MMG5_pMesh mesh,MMG5_pSol met,int itdeg) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure
- * \param disp pointer toward the displacement structure.
+ * \param mesh pointer to the mesh structure
+ * \param disp pointer to the displacement structure.
  * \param t fraction of displacement to test
  * \param tetIdx to fill with the list of non valid tetra if provided.
  *

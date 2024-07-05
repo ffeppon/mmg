@@ -589,7 +589,7 @@ int MMG2D_loadMesh(MMG5_pMesh mesh,const char *filename) {
   return 1;
 }
 
-int MMG2D_loadGenericMesh(MMG5_pMesh mesh, MMG5_pSol sol, const char *filename) {
+int MMG2D_loadGenericMesh(MMG5_pMesh mesh, MMG5_pSol met, MMG5_pSol sol, const char *filename) {
   int ier=0;
   const char *filenameptr,*solnameptr;
   char *tmp,*soltmp;
@@ -628,11 +628,11 @@ int MMG2D_loadGenericMesh(MMG5_pMesh mesh, MMG5_pSol sol, const char *filename) 
     break;
 
   case ( MMG5_FMT_VtkVtu ):
-    ier = MMG2D_loadVtuMesh(mesh,sol,tmp);
+    ier = MMG2D_loadVtuMesh(mesh,met,sol,tmp);
     break;
 
   case ( MMG5_FMT_VtkVtk ):
-    ier = MMG2D_loadVtkMesh(mesh,sol,tmp);
+    ier = MMG2D_loadVtkMesh(mesh,met,sol,tmp);
     break;
 
   case ( MMG5_FMT_MeditASCII ): case ( MMG5_FMT_MeditBinary ):
@@ -664,7 +664,7 @@ int MMG2D_loadGenericMesh(MMG5_pMesh mesh, MMG5_pSol sol, const char *filename) 
 
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \return 0 if failed, 1 otherwise.
  *
  * Check mesh data for a Msh mesh : mark the vertices as used if no triangles in
@@ -827,8 +827,8 @@ int MMG2D_loadMshMesh_and_allData(MMG5_pMesh mesh,MMG5_pSol *sol,const char *fil
 }
 
 /**
- * \param sol pointer toward an allocatable sol structure.
- * \param inm pointer toward the solution file
+ * \param sol pointer to an allocatable sol structure.
+ * \param inm pointer to the solution file
  * \param bin 1 if binary file
  * \param iswp Endianess
  * \param index of the readed solution
@@ -858,8 +858,8 @@ int MMG2D_readFloatSol(MMG5_pSol sol,FILE *inm,int bin,int iswp,MMG5_int pos) {
 }
 
 /**
- * \param sol pointer toward an allocatable sol structure.
- * \param inm pointer toward the solution file
+ * \param sol pointer to an allocatable sol structure.
+ * \param inm pointer to the solution file
  * \param bin 1 if binary file
  * \param iswp Endianess
  * \param index of the readed solution
@@ -889,8 +889,8 @@ int MMG2D_readDoubleSol(MMG5_pSol sol,FILE *inm,int bin,int iswp,MMG5_int pos) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param met pointer toward the sol structure.
+ * \param mesh pointer to the mesh structure.
+ * \param met pointer to the sol structure.
  * \param filename name of file.
  * \return -1 data invalid or we fail, 0 no file, 1 ok.
  *
@@ -980,8 +980,8 @@ int MMG2D_loadSol(MMG5_pMesh mesh,MMG5_pSol sol,const char *filename) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward an allocatable sol structure.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to an allocatable sol structure.
  * \param filename name of file.
  * \return -1 data invalid or we fail, 0 no file, 1 ok.
  *
@@ -1537,8 +1537,8 @@ int MMG2D_saveMshMesh_and_allData(MMG5_pMesh mesh,MMG5_pSol *sol,const char *fil
 }
 
 /**
- * \param sol pointer toward an allocatable sol structure.
- * \param inm pointer toward the solution file
+ * \param sol pointer to an allocatable sol structure.
+ * \param inm pointer to the solution file
  * \param bin 1 if binary file
  * \param index of the writted solution
  * \param gmsh write in 3D (for gmsh) if 1
@@ -1601,8 +1601,8 @@ void MMG2D_writeDoubleSol(MMG5_pSol sol,FILE *inm,int bin,MMG5_int pos,int gmsh)
 
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param met pointer toward the sol structure.
+ * \param mesh pointer to the mesh structure.
+ * \param met pointer to the sol structure.
  * \param filename name of file.
  * \return 0 if failed, 1 otherwise.
  *
@@ -1662,8 +1662,8 @@ int MMG2D_saveSol(MMG5_pMesh mesh,MMG5_pSol sol,const char *filename) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param sol pointer toward the solutions array.
+ * \param mesh pointer to the mesh structure.
+ * \param sol pointer to the solutions array.
  * \param filename name of file.
  * \return 0 if failed, 1 otherwise.
  *

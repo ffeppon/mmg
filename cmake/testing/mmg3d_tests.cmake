@@ -262,7 +262,6 @@ IF ( LONG_TESTS )
 
   ADD_TEST(NAME ${test_name}
     COMMAND ${EXECUT_MMG3D}
-    ${input_file}
     ### M6
     ${input_file}
     -v 5 -sol ${MMG3D_CI_TESTS}/Various_adpsol_hgrad1_M6Mach_Eps0.0005_hmin0.0001_hmax3/metM6.sol -hausd 0.1 -ar 60
@@ -314,6 +313,69 @@ ADD_TEST ( NAME mmg3d_cube-tetgen
   ${MMG3D_CI_TESTS}/Cube/cube
   ${CTEST_OUTPUT_DIR}/mmg3d_cube-tetgen.o.node
  )
+
+# VTK .vtk with no metric
+ADD_TEST(NAME mmg3d_vtkvtk
+  COMMAND ${EXECUT_MMG3D} -v 5
+  ${MMG3D_CI_TESTS}/VtkInout/cube.vtk
+  ${CTEST_OUTPUT_DIR}/mmg3d_vtkvtk)
+
+# VTK .vtu with no metric
+ADD_TEST(NAME mmg3d_vtkvtu
+  COMMAND ${EXECUT_MMG3D} -v 5
+  ${MMG3D_CI_TESTS}/VtkInout/cube.vtu
+  ${CTEST_OUTPUT_DIR}/mmg3d_vtkvtu)
+
+# VTK .vtk with metric
+ADD_TEST(NAME mmg3d_vtkvtk_metric
+  COMMAND ${EXECUT_MMG3D} -v 5
+  ${MMG3D_CI_TESTS}/VtkInout/cube_metric.vtk
+  ${CTEST_OUTPUT_DIR}/mmg3d_vtkvtk_metric)
+
+# VTK .vtu with metric
+ADD_TEST(NAME mmg3d_vtkvtu_metric
+  COMMAND ${EXECUT_MMG3D} -v 5
+  ${MMG3D_CI_TESTS}/VtkInout/cube_metric.vtu
+  ${CTEST_OUTPUT_DIR}/mmg3d_vtkvtu_metric)
+
+# VTK .vtk with ls
+ADD_TEST(NAME mmg3d_vtkvtk_ls
+  COMMAND ${EXECUT_MMG3D} -v 5 -ls
+  ${MMG3D_CI_TESTS}/VtkInout/cube_ls.vtk
+  ${CTEST_OUTPUT_DIR}/mmg3d_vtkvtk_ls)
+
+# VTK .vtu with ls
+ADD_TEST(NAME mmg3d_vtkvtu_ls
+  COMMAND ${EXECUT_MMG3D} -v 5 -ls
+  ${MMG3D_CI_TESTS}/VtkInout/cube_ls.vtu
+  ${CTEST_OUTPUT_DIR}/mmg3d_vtkvtu_ls)
+
+# VTK .vtk with ls and metric
+ADD_TEST(NAME mmg3d_vtkvtk_ls_metric
+  COMMAND ${EXECUT_MMG3D} -v 5 -ls
+  ${MMG3D_CI_TESTS}/VtkInout/cube_ls_metric.vtk
+  ${CTEST_OUTPUT_DIR}/mmg3d_vtkvtk_ls_metric)
+
+# VTK .vtu with ls and metric
+ADD_TEST(NAME mmg3d_vtkvtu_ls_metric
+  COMMAND ${EXECUT_MMG3D} -v 5 -ls
+  ${MMG3D_CI_TESTS}/VtkInout/cube_ls_metric.vtu
+  ${CTEST_OUTPUT_DIR}/mmg3d_vtkvtu_ls_metric)
+
+  # VTK .vtk with metric and ls
+ADD_TEST(NAME mmg3d_vtkvtk_metric_ls
+  COMMAND ${EXECUT_MMG3D} -v 5 -ls
+  ${MMG3D_CI_TESTS}/VtkInout/cube_metric_ls.vtk
+  ${CTEST_OUTPUT_DIR}/mmg3d_vtkvtk_metric_ls)
+
+IF ( (NOT VTK_FOUND) OR USE_VTK MATCHES OFF )
+  SET(expr "VTK library not founded")
+  SET_PROPERTY(
+    TEST mmg3d_vtkvtk mmg3d_vtkvtu mmg3d_vtkvtk_metric mmg3d_vtkvtu_metric
+    mmg3d_vtkvtk_ls mmg3d_vtkvtu_ls mmg3d_vtkvtk_ls_metric
+    mmg3d_vtkvtu_ls_metric mmg3d_vtkvtk_metric_ls
+    PROPERTY PASS_REGULAR_EXPRESSION "${expr}")
+ ENDIF ( )
 
 ##############################################################################
 #####
@@ -576,6 +638,41 @@ ADD_TEST(NAME mmg3d_LSMultiMat
   ${MMG3D_CI_TESTS}/LSMultiMat/step.0.mesh
   -sol ${MMG3D_CI_TESTS}/LSMultiMat/step.0.phi.sol
   ${CTEST_OUTPUT_DIR}/mmg3d_LSMultiMat.o.meshb)
+
+# ls discretisation + parameter file
+ADD_TEST(NAME mmg3d_ParsOpName
+  COMMAND ${EXECUT_MMG3D} -v 5 -ls -nr
+  -f ${MMG3D_CI_TESTS}/LSMultiMat/step.0-refs.mmg3d
+  -sol ${MMG3D_CI_TESTS}/LSMultiMat/step.0.phi.sol
+  ${MMG3D_CI_TESTS}/LSMultiMat/step.0.mesh
+  ${CTEST_OUTPUT_DIR}/mmg3d_ParsOpName.o.meshb)
+
+SET(parsopName "step.0-refs.mmg3d OPENED")
+SET_PROPERTY(TEST mmg3d_ParsOpName
+  PROPERTY PASS_REGULAR_EXPRESSION "${parsopName}")
+
+# ls discretisation + wrong name of parameter file
+ADD_TEST(NAME mmg3d_ParsOpName_wrongFile
+  COMMAND ${EXECUT_MMG3D} -v 5 -ls -nr
+  -f ${MMG3D_CI_TESTS}/LSMultiMat/step.0-false.mmg3d
+  -sol ${MMG3D_CI_TESTS}/LSMultiMat/step.0.phi.sol
+  ${MMG3D_CI_TESTS}/LSMultiMat/step.0.mesh
+  ${CTEST_OUTPUT_DIR}/mmg3d_ParsOpName_wrongFile.o.meshb)
+
+SET(parsopNameWrong "step.0-false.mmg3d file NOT FOUND.")
+SET_PROPERTY(TEST mmg3d_ParsOpName_wrongFile
+  PROPERTY PASS_REGULAR_EXPRESSION "${parsopNameWrong}")
+
+# ls discretisation + no name of parameter file
+ADD_TEST(NAME mmg3d_ParsOpName_NoFileName
+  COMMAND ${EXECUT_MMG3D} -v 5 -f -ls
+  -sol ${MMG3D_CI_TESTS}/LSMultiMat/step.0.phi.sol
+  ${MMG3D_CI_TESTS}/LSMultiMat/step.0.mesh
+  ${CTEST_OUTPUT_DIR}/mmg3d_ParsOpName_NoFileName.o.meshb)
+
+SET(parsopNameNo "Missing filename for -f")
+SET_PROPERTY(TEST mmg3d_ParsOpName_NoFileName
+  PROPERTY PASS_REGULAR_EXPRESSION "${parsopNameNo}")
 
 #multi-mat + opnbdy + non-manifold check
 ADD_TEST(NAME mmg3d_LSMultiMat_nm

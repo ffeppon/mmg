@@ -64,7 +64,9 @@ void MMG2D_delPt(MMG5_pMesh mesh,MMG5_int ip) {
   ppt->tmp    = mesh->npnil;
 
   mesh->npnil = ip;
-  if ( ip == mesh->np )  mesh->np--;
+  if ( ip == mesh->np ) {
+    while ( (!MG_VOK((&mesh->point[mesh->np]))) && mesh->np )  mesh->np--;
+  }
 }
 
 void MMG5_delEdge(MMG5_pMesh mesh,MMG5_int iel) {
@@ -119,12 +121,14 @@ int MMG2D_delElt(MMG5_pMesh mesh,MMG5_int iel) {
     memset(&mesh->adja[iadr],0,3*sizeof(MMG5_int));
 
   mesh->nenil = iel;
-  if ( iel == mesh->nt )  mesh->nt--;
+  if ( iel == mesh->nt ) {
+    while ( (!MG_EOK((&mesh->tria[mesh->nt]))) && mesh->nt ) mesh->nt--;
+  }
   return 1;
 }
 
 /**
- * \param mesh pointer toward the mesh structure
+ * \param mesh pointer to the mesh structure
  *
  * \return 0 if fail, 1 otherwise
  *
@@ -223,7 +227,7 @@ int MMG2D_memOption_memSet(MMG5_pMesh mesh) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure
+ * \param mesh pointer to the mesh structure
  *
  * \return 0 if fail, 1 otherwise
  *
@@ -242,7 +246,7 @@ int MMG2D_memOption(MMG5_pMesh mesh) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  *
  * \return 0 if failed, 1 otherwise.
  *
@@ -293,7 +297,7 @@ int MMG2D_setMeshSize_alloc( MMG5_pMesh mesh ) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure
+ * \param mesh pointer to the mesh structure
  *
  * \return 0 if fail, 1 otherwise
  *

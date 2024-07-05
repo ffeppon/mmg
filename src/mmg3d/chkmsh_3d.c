@@ -42,7 +42,7 @@
 extern int8_t ddb;
 
 /**
- * \param mesh pointer toward mesh
+ * \param mesh pointer to mesh
  *
  * Test that tetra have positive volumes.
  *
@@ -72,7 +72,7 @@ void MMG5_chkvol(MMG5_pMesh mesh) {
 }
 
 /**
- * \param mesh pointer toward the mesh
+ * \param mesh pointer to the mesh
  * \param start tetra from which we start to travel
  * \param na edge vertex
  * \param nb edge vertex
@@ -128,7 +128,7 @@ int MMG3D_chk_shellEdgeTag_oneDir(MMG5_pMesh  mesh,MMG5_int start, MMG5_int na, 
 }
 
 /**
- * \param mesh pointer toward the mesh
+ * \param mesh pointer to the mesh
  * \param start tetra from which we start to travel
  * \param ia local index of edge that must be updated
  * \param tag edge tag
@@ -191,18 +191,17 @@ int MMG3D_chk_shellEdgeTag(MMG5_pMesh  mesh,MMG5_int start, int8_t ia,int16_t ta
 }
 
 /**
- * \param mesh pointer toward the mesh
+ * \param mesh pointer to the mesh
  *
  * Test consistency between the tags in the xtetra of all mesh edges marked as
  * boundaries.
  *
- * \warning Not used.
  */
 void MMG3D_chkmeshedgestags(MMG5_pMesh mesh) {
   MMG5_pTetra    pt;
   MMG5_pxTetra   pxt;
-  MMG5_Hash      hash;
-  int            i,tag;
+  MMG5_HGeom     hash;
+  int            i;
   MMG5_int       k,nt,ip1,ip2;
 
   /* Rough eval of the number of boundary triangles */
@@ -222,7 +221,7 @@ void MMG3D_chkmeshedgestags(MMG5_pMesh mesh) {
   nt = nt/2 + 1;
 
   /* Travel mesh edges and hash boundary ones */
-  MMG5_hashNew(mesh,&hash,nt,3*nt);
+  MMG5_hNew(mesh,&hash,nt,3*nt);
 
   for (k=1; k<=mesh->ne; k++) {
     pt = &mesh->tetra[k];
@@ -230,25 +229,47 @@ void MMG3D_chkmeshedgestags(MMG5_pMesh mesh) {
     if ( !pt->xt ) continue;
 
     pxt = &mesh->xtetra[pt->xt];
+
     for (i=0; i<6; i++) {
       if ( pxt->tag[i] & MG_BDY ) {
         ip1 = pt->v[MMG5_iare[i][0]];
         ip2 = pt->v[MMG5_iare[i][1]];
-        tag = MMG5_hashEdgeTag ( mesh,&hash,ip1,ip2,pxt->tag[i]);
-        if ( tag != pxt->tag[i] ) {
-          fprintf(stderr,"Error: %s: %d: Non consistency at tet %" MMG5_PRId " (%" MMG5_PRId "), edge %d:%" MMG5_PRId "--%" MMG5_PRId "\n ",
+
+        int16_t tag = 0;
+        MMG5_int dummy = 0;
+        int ier = MMG5_hGet ( &hash,ip1,ip2,&dummy,&tag);
+
+        if ( !ier ) {
+           /* First time we meet the edge: store the its tag from the current
+            * tetra in the hash table */
+          int ier2 = MMG5_hEdge ( mesh,&hash,ip1,ip2,0,pxt->tag[i]);
+          if ( !ier2 ) {
+            /* Realloc error */
+            fprintf(stderr,"Error: %s: %d: Unable to add to hash table the edge "
+                    "%d:%" MMG5_PRId "--%" MMG5_PRId " from tetra %" MMG5_PRId
+                    " (%" MMG5_PRId ").\n ",__func__,__LINE__,i,ip1,ip2,k,
+                    MMG3D_indElt(mesh,k));
+          }
+        }
+        else {
+          /* Edge tag has been stored from another tet: check consistency */
+          if ( tag != pxt->tag[i] ) {
+            fprintf(stderr,"Error: %s: %d: Non consistency at tet %" MMG5_PRId
+                    " (%" MMG5_PRId "), edge %d:%" MMG5_PRId "--%" MMG5_PRId "\n ",
                   __func__,__LINE__,k,MMG3D_indElt(mesh,k),i,ip1,ip2);
-          assert( tag == pxt->tag[i] && "edge tag error" );
+            assert( tag == pxt->tag[i] && "edge tag error" );
+          }
         }
       }
     }
   }
-  MMG5_DEL_MEM(mesh,hash.item);
+
+  MMG5_DEL_MEM(mesh,hash.geom);
 }
 
 
 /**
- * \param mesh pointer toward the mesh
+ * \param mesh pointer to the mesh
  * \param ip1 first vertex of edge to test
  * \param ip2 second vertex of edge to test
  * \param tag edge tag
@@ -256,7 +277,6 @@ void MMG3D_chkmeshedgestags(MMG5_pMesh mesh) {
  * Test consistency between the tags of the edge \a ip1 - \a ip2 from all the
  * tetra of the edge shell.
  *
- * \warning Not used.
  */
 void MMG3D_chkedgetag(MMG5_pMesh mesh, MMG5_int ip1, MMG5_int ip2, int tag) {
   MMG5_pTetra    pt;
@@ -286,8 +306,8 @@ void MMG3D_chkedgetag(MMG5_pMesh mesh, MMG5_int ip1, MMG5_int ip2, int tag) {
 }
 
 /**
- * \param mesh pointer toward the mesh
- * \param ppt pointer toward unconsistent point
+ * \param mesh pointer to the mesh
+ * \param ppt pointer to unconsistent point
  * \param k tetra index
  * \param i local index of edge in tetra \a k
  * \param ip1 first vertex of edge to test
@@ -403,7 +423,7 @@ int MMG5_chkmshsurf(MMG5_pMesh mesh){
 }
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \return 0 if fail, 1 otherwise
  *
  * Check the number of boundary faces in each edge shell and the consistency of the edge tag.
@@ -443,7 +463,7 @@ int  MMG3D_chkcoquilface(MMG5_pMesh mesh) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param severe level of performed check (unused)
  * \param base unused argument.
  * \return 0 if fail, 1 if success.
@@ -756,7 +776,7 @@ int MMG5_cntbdypt(MMG5_pMesh mesh, MMG5_int nump){
 }
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  *
  * \return 0 if fail, 1 otherwise.
  *

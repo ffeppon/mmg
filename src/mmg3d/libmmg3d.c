@@ -89,7 +89,7 @@ void MMG3D_Free_topoTables(MMG5_pMesh mesh) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure (unused).
+ * \param mesh pointer to the mesh structure (unused).
  * \return -1 if fail, the number of detected ridges otherwise
  *
  * Create the boundary entities of the mesh (triangles and edges).
@@ -195,9 +195,9 @@ MMG5_int MMG3D_bdryBuild(MMG5_pMesh mesh) {
 
 #ifndef USE_SCOTCH
 /**
- * \param mesh pointer toward the mesh structure (unused).
- * \param np pointer toward the number of used points
- * \param nc pointer toward the number of packed corners
+ * \param mesh pointer to the mesh structure (unused).
+ * \param np pointer to the number of used points
+ * \param nc pointer to the number of packed corners
  * \return 1 if success, 0 if fail.
  *
  * Pack the mesh points and store the packed point index in tmp.
@@ -272,7 +272,7 @@ int MMG3D_mark_packedPoints(MMG5_pMesh mesh,MMG5_int *np,MMG5_int *nc) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure
+ * \param mesh pointer to the mesh structure
  *
  * \return 1 if success, 0 if fail.
  *
@@ -332,7 +332,7 @@ int MMG3D_pack_tetraAndAdja(MMG5_pMesh mesh) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure
+ * \param mesh pointer to the mesh structure
  *
  * \return 1 if success, 0 if fail.
  *
@@ -377,7 +377,7 @@ int MMG3D_pack_tetra(MMG5_pMesh mesh) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure
+ * \param mesh pointer to the mesh structure
  *
  * \return 1 if success, 0 if fail.
  *
@@ -421,8 +421,8 @@ int MMG3D_pack_prismsAndQuads(MMG5_pMesh mesh) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure (unused).
- * \param met pointer toward the solution (metric or level-set) structure.
+ * \param mesh pointer to the mesh structure (unused).
+ * \param met pointer to the solution (metric or level-set) structure.
  * \return 1 if success, 0 if fail.
  *
  * Pack a sparse solution structure. Don't preserve numbering order.
@@ -471,7 +471,7 @@ int MMG3D_pack_sol(MMG5_pMesh mesh,MMG5_pSol sol) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure (unused).
+ * \param mesh pointer to the mesh structure (unused).
  * \return the number of corners if success, -1 otherwise
  *
  * Pack a sparse point array. Don't preserve numbering order.
@@ -536,9 +536,9 @@ int MMG3D_pack_pointArray(MMG5_pMesh mesh) {
 #else
 
 /**
- * \param mesh pointer toward the mesh structure (unused).
- * \param np pointer toward the number of packed points
- * \param nc pointer toward the number of packed corners
+ * \param mesh pointer to the mesh structure (unused).
+ * \param np pointer to the number of packed points
+ * \param nc pointer to the number of packed corners
  * \return 1 if success, 0 if fail.
  *
  * Count the number of packed points and store the packed point index in tmp.
@@ -569,7 +569,7 @@ int MMG3D_mark_packedPoints(MMG5_pMesh mesh,MMG5_int *np,MMG5_int *nc) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure
+ * \param mesh pointer to the mesh structure
  *
  * \return 1 if success, 0 if fail.
  *
@@ -624,7 +624,7 @@ int MMG3D_pack_tetraAndAdja(MMG5_pMesh mesh) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure
+ * \param mesh pointer to the mesh structure
  *
  * \return 1 if success, 0 if fail.
  *
@@ -665,7 +665,7 @@ int MMG3D_pack_tetra(MMG5_pMesh mesh) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure
+ * \param mesh pointer to the mesh structure
  *
  * \return 1 if success, 0 if fail.
  *
@@ -711,8 +711,8 @@ int MMG3D_pack_prismsAndQuads(MMG5_pMesh mesh) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure (unused).
- * \param met pointer toward the solution (metric or level-set) structure.
+ * \param mesh pointer to the mesh structure (unused).
+ * \param met pointer to the solution (metric or level-set) structure.
  * \return 1 if success, 0 if fail.
  *
  * Pack a sparse solution structure. Preserve numbering order.
@@ -748,7 +748,7 @@ int MMG3D_pack_sol(MMG5_pMesh mesh,MMG5_pSol sol) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure (unused).
+ * \param mesh pointer to the mesh structure (unused).
  * \return the number of corners if success, -1 otherwise
  *
  * Pack a sparse point array. Preserve numbering order.
@@ -805,7 +805,7 @@ int MMG3D_pack_pointArray(MMG5_pMesh mesh) {
 
 
 /**
- * \param mesh pointer toward the mesh structure (unused).
+ * \param mesh pointer to the mesh structure (unused).
  * \return 1 if success, 0 otherwise
  *
  * Update the element vertices indices with the pack point index stored in the
@@ -851,7 +851,7 @@ int MMG3D_update_eltsVertices(MMG5_pMesh mesh) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure (unused).
+ * \param mesh pointer to the mesh structure (unused).
  * \return the number of corners if success, -1 otherwise
  *
  * Pack a sparse point array and update the element vertices according to their
@@ -901,9 +901,9 @@ void MMG3D_unset_reqBoundaries(MMG5_pMesh mesh) {
 }
 
 /**
- * \param mesh pointer toward the mesh structure (unused).
- * \param sol pointer toward a solution structure.
- * \param met pointer toward a solution structure.
+ * \param mesh pointer to the mesh structure (unused).
+ * \param sol pointer to a solution structure.
+ * \param met pointer to a solution structure.
  * \return 1 if success, 0 if fail or if we are unable to build triangles.
  *
  * Pack the sparse mesh and create triangles and edges before getting
@@ -1213,7 +1213,7 @@ int MMG3D_mmg3dls(MMG5_pMesh mesh,MMG5_pSol sol,MMG5_pSol umet) {
     fprintf(stdout,"\n  ## WARNING: ISO MODE NOT PROVIDED: ENABLING ISOVALUE DISCRETIZATION MODE (-ls) \n");
     mesh->info.iso = 1;
   }
-  
+
   if ( !umet ) {
     /* User doesn't provide the metric (library mode only), allocate our own one */
     MMG5_SAFE_CALLOC(met,1,MMG5_Sol,_LIBMMG5_RETURN(mesh,met,sol,MMG5_STRONGFAILURE));

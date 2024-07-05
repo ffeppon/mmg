@@ -174,14 +174,14 @@ int MMG5_chkcol_int(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,int8_t iface,
 }
 
 /**
- * \param mesh pointer toward the mesh
+ * \param mesh pointer to the mesh
  * \param start tetra from which we start to travel
  * \param end tetra at which we stop the travel
  * \param na edge vertex
  * \param nb edge vertex
  * \param piv global index of the pivot to set the sense of travel
- * \param iel pointer toward the last element of the shell
- * \param iopp pointer toward the ending boundary face of the shell
+ * \param iel pointer to the last element of the shell
+ * \param iopp pointer to the ending boundary face of the shell
  *
  * \return -1 if fail, \a piv otherwise.
  *
@@ -230,7 +230,7 @@ MMG5_int MMG3D_unfold_shell(MMG5_pMesh  mesh,MMG5_int start,MMG5_int end, MMG5_i
 }
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param k index of the starting tetra.
  * \param iface local index of the starting face in the tetra \a k.
  * \param ideg local index of the starting edge in the face \a iface.
@@ -354,7 +354,7 @@ MMG5_topchkcol_bdy(MMG5_pMesh mesh,MMG5_int k,int iface,int8_t iedg,MMG5_int *li
 }
 
 /**
- * \param mesh pointer toward the mesh
+ * \param mesh pointer to the mesh
  * \param start tetra from which we start to travel
  * \param na edge vertex
  * \param nb edge vertex
@@ -397,6 +397,10 @@ int MMG3D_get_shellEdgeTag_oneDir(MMG5_pMesh  mesh,MMG5_int start, MMG5_int na, 
         *tag |= pxt->tag[i];
         *filled = 1;
         return adj;
+      } else if ((pxt->ftag[MMG5_ifar[i][0]] & MG_BDY) || (pxt->ftag[MMG5_ifar[i][1]] & MG_BDY)) {
+        *tag |= (pxt->tag[i] | MG_BDY);
+        *filled = 1;
+        return adj;
       }
     }
 
@@ -416,7 +420,7 @@ int MMG3D_get_shellEdgeTag_oneDir(MMG5_pMesh  mesh,MMG5_int start, MMG5_int na, 
 }
 
 /**
- * \param mesh pointer toward the mesh
+ * \param mesh pointer to the mesh
  * \param start tetra from which we start to travel
  * \param ia local index of edge that must be updated
  * \param tag new edge tag
@@ -428,7 +432,6 @@ int MMG3D_get_shellEdgeTag_oneDir(MMG5_pMesh  mesh,MMG5_int start, MMG5_int na, 
  * consistent through the edge shell);
  *
  */
-static inline
 int MMG3D_get_shellEdgeTag(MMG5_pMesh  mesh,MMG5_int start, int8_t ia,int16_t *tag,MMG5_int *ref) {
   MMG5_pTetra  pt;
   MMG5_pxTetra pxt;
@@ -445,10 +448,15 @@ int MMG3D_get_shellEdgeTag(MMG5_pMesh  mesh,MMG5_int start, int8_t ia,int16_t *t
 
   if ( pt->xt ) {
     pxt = &mesh->xtetra[pt->xt];
+    *ref = pxt->edg[ia];
     if ( pxt->tag[ia] & MG_BDY ) {
-      *tag |= pxt->tag[ia];
-      *ref = pxt->edg[ia];
-      return 1;
+        *tag |= pxt->tag[ia];
+        *ref = pxt->edg[ia];
+        return 1;
+    } else if ((pxt->ftag[MMG5_ifar[ia][0]] & MG_BDY) || (pxt->ftag[MMG5_ifar[ia][1]] & MG_BDY)) {
+        *tag |= (pxt->tag[ia] | MG_BDY);
+        *ref = pxt->edg[ia];
+        return 1;
     }
   }
 
@@ -482,14 +490,14 @@ int MMG3D_get_shellEdgeTag(MMG5_pMesh  mesh,MMG5_int start, int8_t ia,int16_t *t
 }
 
 /**
- * \param mesh pointer toward the mesh structure.
- * \param met pointer toward the metric structure.
+ * \param mesh pointer to the mesh structure.
+ * \param met pointer to the metric structure.
  * \param k index of element in which we collapse.
  * \param iface face through wich we perform the collapse
  * \param iedg edge to collapse (in local face num)
- * \param listv pointer toward the list of the tetra in the ball of \a p0.
+ * \param listv pointer to the list of the tetra in the ball of \a p0.
  * \param ilistv number of tetra in the ball of \a p0.
- * \param lists pointer toward the surfacic ball of \a p0.
+ * \param lists pointer to the surfacic ball of \a p0.
  * \param ilists number of tetra in the surfacic ball of \a p0.
  * \param refmin reference of one of the two subdomains in presence
  * \param refplus reference of the other subdomain in presence
@@ -613,38 +621,36 @@ int MMG5_chkcol_bdy(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,int8_t iface,
       if ( pt->xt && (pxt->ftag[ipp] & MG_BDY) && (pxt->ftag[iq] & MG_BDY) )
         return 0;
 
-      if ( pt->xt )  {
-        for (i=0; i<4; i++) {
-          if ( i==ipp || i==iq ) {
-            continue;
+      for (i=0; i<4; i++) {
+        if ( i==ipp || i==iq ) {
+          continue;
+        }
+
+        /*  Avoid surface crimping: check that the collapse doesn't merge 3
+         *  bdy edge along a non bdy face: we have to check the edge of each
+         *  shell because some MG_BDY tags may be missings due to the creation
+         *  of an xtetra during a previous collapse */
+        if ( (!pt->xt) || !(pxt->ftag[i] & MG_BDY) ) {
+          int16_t  tag0,tag1,tag2;
+          MMG5_int ref0,ref1,ref2;
+
+          tag0 = tag1 = tag2 = 0;
+          ref0 = ref1 = ref2 = 0;
+
+          if ( !MMG3D_get_shellEdgeTag(mesh,iel,MMG5_iarf[i][0],&tag0,&ref0) ) {
+            fprintf(stderr,"\n  ## Error: %s: 0. unable to get edge info.\n",__func__);
+            return 0;
           }
-
-          /*  Avoid surface crimping: check that the collapse doesn't merge 3
-           *  bdy edge along a non bdy face: we have to check the edge of each
-           *  shell because some MG_BDY tags may be missings due to the creation
-           *  of an xtetra during a previous collapse */
-          if ( !(pxt->ftag[i] & MG_BDY) ) {
-            int16_t  tag0,tag1,tag2;
-            MMG5_int ref0,ref1,ref2;
-
-            tag0 = tag1 = tag2 = 0;
-            ref0 = ref1 = ref2 = 0;
-
-            if ( !MMG3D_get_shellEdgeTag(mesh,iel,MMG5_iarf[i][0],&tag0,&ref0) ) {
-              fprintf(stderr,"\n  ## Error: %s: 0. unable to get edge info.\n",__func__);
-              return 0;
-            }
-            if ( !MMG3D_get_shellEdgeTag(mesh,iel,MMG5_iarf[i][1],&tag1,&ref1) ) {
-              fprintf(stderr,"\n  ## Error: %s: 1. unable to get edge info.\n",__func__);
-              return 0;
-            }
-            if ( !MMG3D_get_shellEdgeTag(mesh,iel,MMG5_iarf[i][2],&tag2,&ref2) ) {
-              fprintf(stderr,"\n  ## Error: %s: 2. unable to get edge info.\n",__func__);
-              return 0;
-            }
-            if ( (tag0 & MG_BDY) && (tag1 & MG_BDY) && (tag2 & MG_BDY ) ) {
-              return 0;
-            }
+          if ( !MMG3D_get_shellEdgeTag(mesh,iel,MMG5_iarf[i][1],&tag1,&ref1) ) {
+            fprintf(stderr,"\n  ## Error: %s: 1. unable to get edge info.\n",__func__);
+            return 0;
+          }
+          if ( !MMG3D_get_shellEdgeTag(mesh,iel,MMG5_iarf[i][2],&tag2,&ref2) ) {
+            fprintf(stderr,"\n  ## Error: %s: 2. unable to get edge info.\n",__func__);
+            return 0;
+          }
+          if ( (tag0 & MG_BDY) && (tag1 & MG_BDY) && (tag2 & MG_BDY ) ) {
+            return 0;
           }
         }
       }
@@ -983,7 +989,7 @@ void MMG3D_update_edgeTag(MMG5_pTetra pt,MMG5_pxTetra pxt,MMG5_int np, MMG5_int 
 }
 
 /**
- * \param mesh pointer toward the mesh
+ * \param mesh pointer to the mesh
  * \param start tetra from which we start to travel
  * \param na edge vertex
  * \param nb edge vertex
@@ -1053,7 +1059,7 @@ MMG5_int MMG3D_update_shellEdgeTag_oneDir(MMG5_pMesh  mesh,MMG5_int start, MMG5_
 }
 
 /**
- * \param mesh pointer toward the mesh
+ * \param mesh pointer to the mesh
  * \param start tetra from which we start to travel
  * \param ia local index of edge that must be updated
  * \param tag new edge tag
@@ -1126,9 +1132,9 @@ int MMG3D_update_shellEdgeTag(MMG5_pMesh  mesh,MMG5_int start, int8_t ia,int16_t
 }
 
 /**
- * \param mesh pointer toward the mesh
- * \param met pointer toward the metric
- * \param list pointer toward the ball of the point
+ * \param mesh pointer to the mesh
+ * \param met pointer to the metric
+ * \param list pointer to the ball of the point
  * \param ilist number of elements in the ball of the point
  * \param indq local index of the point on which we collapse
  * \param typchk type of check performed depending on the remeshing step

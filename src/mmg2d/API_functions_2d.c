@@ -53,8 +53,7 @@ int MMG2D_Init_mesh(const int starter,...) {
   return ier;
 }
 
-void MMG2D_Init_fileNames(MMG5_pMesh mesh,MMG5_pSol sol
-  ) {
+void MMG2D_Init_fileNames(MMG5_pMesh mesh,MMG5_pSol sol) {
 
   MMG5_Init_fileNames(mesh,sol);
   return;
@@ -67,6 +66,10 @@ int MMG2D_Set_inputMeshName(MMG5_pMesh mesh, const char* meshin) {
 
 int MMG2D_Set_inputSolName(MMG5_pMesh mesh,MMG5_pSol sol, const char* solin) {
   return MMG5_Set_inputSolName(mesh,sol,solin);
+}
+
+int MMG2D_Set_inputParamName(MMG5_pMesh mesh, const char* fparamin) {
+  return MMG5_Set_inputParamName(mesh,fparamin);
 }
 
 int MMG2D_Set_outputMeshName(MMG5_pMesh mesh, const char* meshout) {
@@ -98,11 +101,11 @@ void MMG2D_Init_parameters(MMG5_pMesh mesh) {
   /* default values for doubles */
   /* level set value */
   mesh->info.ls       = MMG5_LS;
-    
   /* ISO discretization mode with less snapping     
    * and edge renumbering */
   mesh->info.isosafe       = MMG5_OFF;
-
+/* xreg relaxation parameter value */
+  mesh->info.lxreg    = MMG5_XREG;
   /* Ridge detection */
   mesh->info.dhd      = MMG5_ANGEDG;
 }
@@ -359,6 +362,13 @@ int MMG2D_Set_dparameter(MMG5_pMesh mesh, MMG5_pSol sol, int dparam, double val)
     break;
   case MMG2D_DPARAM_ls :
     mesh->info.ls       = val;
+    break;
+  case MMG2D_DPARAM_xreg :
+    if (val < 0.0 || val > 1.0) {
+      fprintf(stderr,"\n  ## Error: %s: Coordinate regularization parameter must be comprised between 0 and 1.\n",__func__);
+    }
+    else
+      mesh->info.lxreg    = val;
     break;
   case MMG2D_DPARAM_rmc :
     if ( !val ) {

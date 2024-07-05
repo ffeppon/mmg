@@ -335,7 +335,7 @@ typedef struct {
   MMG5_int ref; /*!< Reference of the triangle */
   MMG5_int base;
   MMG5_int cc; /*!< used to store the tetra + tetra face indices
-                 that allow to access to the tria */
+                 that allow to access to the tria 4*k + i */
   MMG5_int edg[3]; /*!< edg[i] contains the ref of the \f$i^{th}\f$ edge
                      of triangle */
   MMG5_int flag;
@@ -516,7 +516,7 @@ typedef MMG5_InvMat * MMG5_pInvMat;
 typedef struct {
   MMG5_pPar     par;
   double        dhd,hmin,hmax,hsiz,hgrad,hgradreq,hausd;
-  double        min[3],max[3],delta,ls,rmc;
+  double        min[3],max[3],delta,ls,lxreg,rmc;
   MMG5_int      *br; /*!< list of based references to which an implicit surface can be attached */
   MMG5_int      isoref; /*!< isovalue reference in ls mode */
   MMG5_int      nsd; /*!< index of subdomain to save (0 by default == all subdomains are saved) */
@@ -546,6 +546,7 @@ typedef struct {
   int8_t        sethmax; /*!< 1 if user set hmin, 0 otherwise (needed for multiple library calls) */
   uint8_t       ani, optim, optimLES, noinsert, noswap, nomove, nosurf, nosizreq;
   uint8_t       metRidTyp;
+  char          *fparam; /*!< name of the parameter file */
   /*!< metRidTyp
    * - in 3D: 0 for a classical storage of the aniso
    * metric at ridge, 1 for the Mmg storage (modified
@@ -667,7 +668,7 @@ typedef struct {
   MMG5_int  npmax; /* Maximum number of points */
   MMG5_int  npi; /* Temporary number of points (internal use only) */
   int       size; /* Number of solutions per entity */
-  int       type; /* Type of the solution (scalar, vectorial of tensorial) */
+  int       type; /* Type of the solution (scalar, vectorial or tensorial) */
   int       entities; /* Type of the solution (scalar, vectorial of tensorial) */
   double    *m; /*!< Solution values */
   double    umin,umax; /*!<Min/max values for the solution */

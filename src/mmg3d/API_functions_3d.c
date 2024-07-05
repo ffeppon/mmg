@@ -71,6 +71,10 @@ int MMG3D_Set_inputSolName(MMG5_pMesh mesh,MMG5_pSol sol, const char* solin) {
   return MMG5_Set_inputSolName(mesh,sol,solin);
 }
 
+int MMG3D_Set_inputParamName(MMG5_pMesh mesh, const char* fparamin) {
+  return MMG5_Set_inputParamName(mesh,fparamin);
+}
+
 int MMG3D_Set_outputMeshName(MMG5_pMesh mesh, const char* meshout) {
 
   return MMG5_Set_outputMeshName(mesh,meshout);
@@ -200,7 +204,7 @@ int MMG3D_Set_solsAtVerticesSize(MMG5_pMesh mesh, MMG5_pSol *sol,int nsols,
 }
 
 /**
- * \param mesh pointer toward the mesh structure.
+ * \param mesh pointer to the mesh structure.
  * \param np number of vertices.
  * \param ne number of tetrahedra.
  * \param nprism number of prisms.
@@ -2420,6 +2424,13 @@ int MMG3D_Set_dparameter(MMG5_pMesh mesh, MMG5_pSol sol, int dparam, double val)
     break;
   case MMG3D_DPARAM_ls :
     mesh->info.ls       = val;
+    break;
+  case MMG3D_DPARAM_xreg :
+    if (val < 0.0 || val > 1.0) {
+      fprintf(stderr,"\n  ## Error: %s: Coordinate regularization parameter must be comprised between 0 and 1.\n",__func__);
+    }
+    else
+      mesh->info.lxreg    = val;
     break;
   case MMG3D_DPARAM_rmc :
     if ( !val ) {
