@@ -540,7 +540,6 @@ typedef struct {
   int8_t        badkal; /*!< 1 if the mesh contains a very bad element */
   int8_t        iso; /*!< level-set discretization mode */
   int8_t        isosurf; /*!< level-set discretization mode on the surface */
-  int8_t        isosafe; /*!< Disable level set edges retagging and some snapping */
   int8_t        setfem; /*!< Enforce finite element mesh (try to avoid edges
                       * connecting 2 bdy points and tet with more than 1 bdy
                       * face) */
@@ -551,6 +550,7 @@ typedef struct {
                           is \a MG_Vert, MG_Tria and MG_Tetra */
   int8_t        sethmin; /*!< 1 if user set hmin, 0 otherwise (needed for multiple library calls) */
   int8_t        sethmax; /*!< 1 if user set hmin, 0 otherwise (needed for multiple library calls) */
+  int8_t        isosafe; /*!< Disable level set edges retagging and some snapping */
   uint8_t       ani, optim, optimLES, noinsert, noswap, nomove, nosurf, nosizreq;
   uint8_t       metRidTyp;
   char          *fparam; /*!< name of the parameter file */
