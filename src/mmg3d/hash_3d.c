@@ -615,7 +615,7 @@ int MMG5_setEdgeNmTag(MMG5_pMesh mesh, MMG5_Hash *hash) {
 
 
 static inline
-int MMG5_skip_ParBdy ( int8_t tag ) {
+uint16_t MMG5_skip_ParBdy ( uint16_t tag ) {
   return (tag & MG_PARBDY);
 }
 
@@ -634,7 +634,7 @@ int MMG5_skip_ParBdy ( int8_t tag ) {
  * points to not break the ParMmg distributed analysis in which this field is
  * used to store the global numbering of nodes.
  */
-int MMG5_setVertexNmTag(MMG5_pMesh mesh,int func(int8_t) ) {
+int MMG5_setVertexNmTag(MMG5_pMesh mesh,uint16_t func(uint16_t) ) {
   MMG5_pTetra         ptet;
   MMG5_pPoint         ppt0,ppt1;
   MMG5_Hash           hash;
@@ -911,7 +911,7 @@ int MMG5_hashPop(MMG5_Hash *hash,MMG5_int a,MMG5_int b) {
  * set tag to edge on geometry
  *
  */
-int MMG5_hTag(MMG5_HGeom *hash,MMG5_int a,MMG5_int b,MMG5_int ref,int16_t tag) {
+int MMG5_hTag(MMG5_HGeom *hash,MMG5_int a,MMG5_int b,MMG5_int ref,uint16_t tag) {
   MMG5_hgeom  *ph;
   MMG5_int    key;
   MMG5_int    ia,ib;
@@ -944,7 +944,7 @@ int MMG5_hTag(MMG5_HGeom *hash,MMG5_int a,MMG5_int b,MMG5_int ref,int16_t tag) {
 }
 
 /** remove edge from hash table */
-int MMG5_hPop(MMG5_HGeom *hash,MMG5_int a,MMG5_int b,MMG5_int *ref,int16_t *tag) {
+int MMG5_hPop(MMG5_HGeom *hash,MMG5_int a,MMG5_int b,MMG5_int *ref,uint16_t *tag) {
   MMG5_hgeom  *ph,*php;
   MMG5_int    key;
   MMG5_int    ia,ib,iph,iphp;
@@ -1004,7 +1004,7 @@ int MMG5_hPop(MMG5_HGeom *hash,MMG5_int a,MMG5_int b,MMG5_int *ref,int16_t *tag)
 }
 
 /** get ref and tag to edge on geometry */
-int MMG5_hGet(MMG5_HGeom *hash,MMG5_int a,MMG5_int b,MMG5_int *ref,int16_t *tag) {
+int MMG5_hGet(MMG5_HGeom *hash,MMG5_int a,MMG5_int b,MMG5_int *ref,uint16_t *tag) {
   MMG5_hgeom  *ph;
   MMG5_int    key;
   MMG5_int    ia,ib;
@@ -1037,7 +1037,7 @@ int MMG5_hGet(MMG5_HGeom *hash,MMG5_int a,MMG5_int b,MMG5_int *ref,int16_t *tag)
 }
 
 /** store edge on geometry */
-int MMG5_hEdge(MMG5_pMesh mesh,MMG5_HGeom *hash,MMG5_int a,MMG5_int b,MMG5_int ref,int16_t tag) {
+int MMG5_hEdge(MMG5_pMesh mesh,MMG5_HGeom *hash,MMG5_int a,MMG5_int b,MMG5_int ref,uint16_t tag) {
   MMG5_hgeom  *ph;
   MMG5_int    key;
   MMG5_int    ia,ib,j;
@@ -1114,7 +1114,7 @@ int MMG5_hGeom(MMG5_pMesh mesh) {
   MMG5_Hash    hash;
   MMG5_int     edg,*adja,k,kk;
   int          ier;
-  int16_t      tag;
+  uint16_t     tag;
   int8_t       i,i1,i2;
 
   /* if edges exist in mesh, hash special edges from existing field */
@@ -1382,11 +1382,23 @@ int MMG5_bdryTria(MMG5_pMesh mesh, MMG5_int ntmesh) {
               /* If the face from which we arrive is not a parallel face, then remove also the parallel tags
               MG_PARBDY, MG_NOSURF and MG_REQ */
               if ( !(pxt->ftag[i] & MG_PARBDY)) {
-                ptt->tag[j] &= ~MG_PARBDY;
-                ptt->tag[j] &= ~MG_NOSURF;
-                ptt->tag[j] &= ~MG_REQ;
+                /* Remove the tags only if the edge is identified as parallel.
+                   By convention in ParMmg (see tag_pmmg.c in ParMmg), if an entity is
+                     - parallel + not required: the tags are MG_PARBDY+MG_NOSURF+MG_REQ
+                     - parallel + truly required by the user: the tags are MG_PARBDY+MG_REQ
+                    so we remove the tags MG_NOSURF and MG_REQ only if the edge is identified as MG_NOSURF */
+                if ( ptt->tag[j] & MG_PARBDY ) {
+                  ptt->tag[j] &= ~MG_PARBDY;
+                  /* a truly required entity does not have MG_NOSURF tag so don't remove MG_REQ tag */
+                  /* if MG_NOSURF tag, then also remove MG_REQ and MG_SURF tags */
+                  if( ptt->tag[j] & MG_NOSURF ) {
+                    ptt->tag[j] &= ~MG_NOSURF;
+                    ptt->tag[j] &= ~MG_REQ;
+                  }
+                }
               }
             }
+
             /* Assign ref to tria from xtetra->edg */
             if ( pxt->edg[MMG5_iarf[i][j]] )
               ptt->edg[j] = pxt->edg[MMG5_iarf[i][j]];
@@ -1954,7 +1966,7 @@ int MMG5_bdrySet(MMG5_pMesh mesh) {
   MMG5_Hash     hash;
   MMG5_int      ref,*adja,adj,k,ia,ib,ic,kt,initedg[3];
   int           j;
-  int16_t       tag,inittag[3];
+  uint16_t      tag,inittag[3];
   int8_t        i,i1,i2;
 
   if ( !mesh->nt )  return 1;
@@ -1992,6 +2004,7 @@ int MMG5_bdrySet(MMG5_pMesh mesh) {
     for (k=1; k<=mesh->ne; k++) {
       pt = &mesh->tetra[k];
       if ( !MG_EOK(pt) )  continue;
+      if (pt->tag & MG_OVERLAP) continue;
       adja = &mesh->adja[4*(k-1)+1];
       for (i=0; i<4; i++) {
         adj = adja[i] / 4;
@@ -2016,7 +2029,17 @@ int MMG5_bdrySet(MMG5_pMesh mesh) {
           pxt = &mesh->xtetra[pt->xt];
           pxt->ref[i]   = ptt->ref;
           pxt->ftag[i] |= MG_BDY;
-          pxt->ftag[i] |= (ptt->tag[0] & ptt->tag[1] & ptt->tag[2]);
+
+          /* Store tags that are common to the 3 edges of the triangles */
+          tag = (ptt->tag[0] & ptt->tag[1] & ptt->tag[2]);
+
+          /* Remove infos that make no sense along faces */
+          tag &= ~MG_GEO;
+          tag &= ~MG_NOM;
+          assert(  !(tag & MG_CRN) && "MG_CRN tag has no sense along edges" );
+
+          /* Assign tag to the face */
+          pxt->ftag[i] |= tag;
         }
       }
     }
@@ -2026,6 +2049,7 @@ int MMG5_bdrySet(MMG5_pMesh mesh) {
     for (k=1; k<=mesh->ne; k++) {
       pt = &mesh->tetra[k];
       if ( !MG_EOK(pt) )  continue;
+      if (pt->tag & MG_OVERLAP) continue;
 
       for (i=0; i<4; i++) {
         ia = pt->v[MMG5_idir[i][0]];
@@ -2049,7 +2073,19 @@ int MMG5_bdrySet(MMG5_pMesh mesh) {
         pxt = &mesh->xtetra[mesh->xt];
         pxt->ref[i]   = ptt->ref;
         pxt->ftag[i] |= MG_BDY;
-        pxt->ftag[i] |= (ptt->tag[0] & ptt->tag[1] & ptt->tag[2]);
+
+        /* here we may wrongfully add MG_REF and/or MG_BDY face tags to internal triangles
+        in opnbdy mode */
+        /* Store tags that are common to the 3 edges of the triangles */
+        tag = (ptt->tag[0] & ptt->tag[1] & ptt->tag[2]);
+
+        /* Remove infos that make no sense along faces */
+        tag &= ~MG_GEO;
+        tag &= ~MG_NOM;
+        assert(  !(tag & MG_CRN) && "MG_CRN tag has no sense along edges" );
+
+        /* Assign tag to the face */
+        pxt->ftag[i] |= tag;
       }
     }
   }
@@ -2058,6 +2094,7 @@ int MMG5_bdrySet(MMG5_pMesh mesh) {
     for (k=1; k<=mesh->ne; k++) {
       pt = &mesh->tetra[k];
       if ( !MG_EOK(pt) )  continue;
+      if (pt->tag & MG_OVERLAP) continue;
       if ( !pt->xt )  continue;
       pxt = &mesh->xtetra[pt->xt];
       adja = &mesh->adja[4*(k-1)+1];
@@ -2099,6 +2136,7 @@ int MMG5_bdrySet(MMG5_pMesh mesh) {
     for (k=1; k<=mesh->ne; k++) {
       pt = &mesh->tetra[k];
       if ( !MG_EOK(pt) )  continue;
+      if (pt->tag & MG_OVERLAP) continue;
       if ( !pt->xt )  continue;
       pxt = &mesh->xtetra[pt->xt];
       adja = &mesh->adja[4*(k-1)+1];
@@ -2210,7 +2248,17 @@ int MMG5_bdrySet(MMG5_pMesh mesh) {
       pxp = &mesh->xprism[mesh->xpr];
       pxp->ref[i]   = ptt->ref;
       pxp->ftag[i] |= MG_BDY;
-      pxp->ftag[i] |= (ptt->tag[0] & ptt->tag[1] & ptt->tag[2]);
+
+      /* Store tags that are common to the 3 edges of the triangles */
+      tag = (ptt->tag[0] & ptt->tag[1] & ptt->tag[2]);
+
+      /* Remove infos that make no sense along faces */
+      tag &= ~MG_GEO;
+      tag &= ~MG_NOM;
+      assert(  !(tag & MG_CRN) && "MG_CRN tag has no sense along edges" );
+
+      /* Assign tag to the face */
+      pxp->ftag[i] |= tag;
 
       for (j=0; j<3; j++) {
         pxp->tag[MMG5_iarf[i][j]] |= pxp->ftag[i] | ptt->tag[j];
@@ -2252,7 +2300,7 @@ int MMG5_bdryUpdate(MMG5_pMesh mesh) {
   MMG5_Hash     hash;
   MMG5_int      ia,ib,ic,k,kt;
   int           j;
-  int16_t       tag;
+  uint16_t      tag;
   int8_t        i;
 
   if ( !mesh->nt )  return 1;

@@ -109,7 +109,7 @@ int MMG5_setadj(MMG5_pMesh mesh){
   MMG5_pTria   pt,pt1;
   MMG5_int     *adja,*adjb,adji1,adji2,*pile,iad,ipil,ip1,ip2,gen;
   MMG5_int     k,kk,iel,jel,nvf,nf,nr,nm,nt,nre,nreq,ncc,ned,ref;
-  int16_t      tag;
+  uint16_t     tag;
   int8_t       i,ii,i1,i2,ii1,ii2,voy;
 
   nvf = nf = ncc = ned = 0;
@@ -685,7 +685,7 @@ int MMG5_norver(MMG5_pMesh mesh) {
   }
 
   /** Step 2: Allocate memory to store normals for boundary points */
-  mesh->xpmax  = MG_MAX( (long long)(1.5*mesh->xp),mesh->npmax);
+  mesh->xpmax  = MG_MAX( (MMG5_int)(1.5*mesh->xp),mesh->npmax);
 
   MMG5_ADD_MEM(mesh,(mesh->xpmax+1)*sizeof(MMG5_xPoint),"boundary points",return 0);
   MMG5_SAFE_CALLOC(mesh->xpoint,mesh->xpmax+1,MMG5_xPoint,return 0);
@@ -1475,6 +1475,10 @@ int MMG3D_analys(MMG5_pMesh mesh) {
 
   /* define geometry for non manifold points */
   if ( !MMG3D_nmgeom(mesh) ) return 0;
+
+#ifndef NDEBUG
+  MMG3D_chkfacetags(mesh);
+#endif
 
 #ifdef USE_POINTMAP
   /* Initialize source point with input index */

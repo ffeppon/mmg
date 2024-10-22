@@ -90,7 +90,7 @@ void MMG5_chkvol(MMG5_pMesh mesh) {
  */
 static inline
 int MMG3D_chk_shellEdgeTag_oneDir(MMG5_pMesh  mesh,MMG5_int start, MMG5_int na, MMG5_int nb,
-                                  int16_t tag,MMG5_int ref, MMG5_int piv,MMG5_int adj) {
+                                  uint16_t tag,MMG5_int ref, MMG5_int piv,MMG5_int adj) {
   MMG5_pTetra  pt;
   MMG5_pxTetra pxt;
   MMG5_int     *adja;
@@ -139,7 +139,7 @@ int MMG3D_chk_shellEdgeTag_oneDir(MMG5_pMesh  mesh,MMG5_int start, MMG5_int na, 
  * traveling its shell.
  *
  */
-int MMG3D_chk_shellEdgeTag(MMG5_pMesh  mesh,MMG5_int start, int8_t ia,int16_t tag,MMG5_int ref) {
+int MMG3D_chk_shellEdgeTag(MMG5_pMesh  mesh,MMG5_int start, int8_t ia,uint16_t tag,MMG5_int ref) {
   MMG5_pTetra  pt;
   MMG5_pxTetra pxt;
   MMG5_int     piv,na,nb,adj,*adja;
@@ -235,14 +235,16 @@ void MMG3D_chkmeshedgestags(MMG5_pMesh mesh) {
         ip1 = pt->v[MMG5_iare[i][0]];
         ip2 = pt->v[MMG5_iare[i][1]];
 
-        int16_t tag = 0;
+        uint16_t tag = 0;
         MMG5_int dummy = 0;
         int ier = MMG5_hGet ( &hash,ip1,ip2,&dummy,&tag);
 
         if ( !ier ) {
            /* First time we meet the edge: store the its tag from the current
-            * tetra in the hash table */
-          int ier2 = MMG5_hEdge ( mesh,&hash,ip1,ip2,0,pxt->tag[i]);
+            * tetra in the hash table. Ignore OLDPARBDY tag because it is not
+            * consistent through meshes inside ParMmg and forbid the use of the
+            * current function to check tag consistency if not ignored. */
+          int ier2 = MMG5_hEdge ( mesh,&hash,ip1,ip2,0,(pxt->tag[i] & ~MG_OLDPARBDY));
           if ( !ier2 ) {
             /* Realloc error */
             fprintf(stderr,"Error: %s: %d: Unable to add to hash table the edge "
@@ -252,8 +254,12 @@ void MMG3D_chkmeshedgestags(MMG5_pMesh mesh) {
           }
         }
         else {
-          /* Edge tag has been stored from another tet: check consistency */
-          if ( tag != pxt->tag[i] ) {
+          /* Edge tag has been stored from another tet: check consistency.
+             Ignore OLDPARBDY tag because it is not
+            * consistent through meshes inside ParMmg and forbid the use of the
+            * current function to check tag consistency if not ignored.
+            */
+          if ( tag != (pxt->tag[i] & ~MG_OLDPARBDY) ) {
             fprintf(stderr,"Error: %s: %d: Non consistency at tet %" MMG5_PRId
                     " (%" MMG5_PRId "), edge %d:%" MMG5_PRId "--%" MMG5_PRId "\n ",
                   __func__,__LINE__,k,MMG3D_indElt(mesh,k),i,ip1,ip2);
@@ -301,6 +307,31 @@ void MMG3D_chkedgetag(MMG5_pMesh mesh, MMG5_int ip1, MMG5_int ip2, int tag) {
           assert(0);
         }
       }
+    }
+  }
+}
+
+/**
+ * \param mesh pointer to the mesh
+ *
+ * Check that faces do not have nonsensical tags (MG_GEO, MG_NOM, MG_CRN).
+ *
+ */
+void MMG3D_chkfacetags(MMG5_pMesh mesh) {
+  MMG5_pTetra  pt;
+  MMG5_pxTetra pxt;
+  MMG5_int     k;
+  int          i, tag;
+
+  for (k=1; k<=mesh->ne; k++) {
+    pt = &mesh->tetra[k];
+    if ( !MG_EOK(pt) )  continue;
+    if ( !pt->xt ) continue;
+
+    pxt = &mesh->xtetra[pt->xt];
+    for (i=0; i<4; i++) {
+      tag = pxt->ftag[i];
+      assert(!(tag & (MG_GEO | MG_NOM | MG_CRN)) && "Nonsensical tag on face");
     }
   }
 }
@@ -482,6 +513,9 @@ int MMG5_mmg3dChkmsh(MMG5_pMesh mesh,int severe,MMG5_int base) {
 
   /* Check edge tag consistency (between xtetra) */
   MMG3D_chkmeshedgestags(mesh);
+
+  /* Check that faces do not have nonsensical tags*/
+  MMG3D_chkfacetags(mesh);
 
   /* Check point tags consistency with edge tag */
   MMG3D_chkpointtag(mesh);
@@ -871,7 +905,7 @@ int srcface(MMG5_pMesh mesh,MMG5_int n0,MMG5_int n1,MMG5_int n2) {
   MMG5_pTetra   pt;
   MMG5_pxTetra  pxt;
   MMG5_int      ref,minn,maxn,sn,k,ip0,ip1,ip2,mins,maxs,sum;
-  int16_t       tag;
+  uint16_t      tag;
   int8_t        i;
   static int8_t mmgWarn0 = 0;
 
