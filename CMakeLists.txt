@@ -20,7 +20,7 @@
 ##  use this copy of the mmg distribution only if you accept them.
 ## =============================================================================
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.12)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.5)
 
 # if PROJECT_NAME is defined, mmg is a subproject
 if(DEFINED PROJECT_NAME)
@@ -62,9 +62,9 @@ include(GNUInstallDirs)
 ###############################################################################
 
 SET (CMAKE_RELEASE_VERSION_MAJOR "5" )
-SET (CMAKE_RELEASE_VERSION_MINOR "7" )
-SET (CMAKE_RELEASE_VERSION_PATCH "1" )
-SET (CMAKE_RELEASE_DATE "Dec. 20, 2022" )
+SET (CMAKE_RELEASE_VERSION_MINOR "8" )
+SET (CMAKE_RELEASE_VERSION_PATCH "0" )
+SET (CMAKE_RELEASE_DATE "Oct. 30, 2024" )
 
 SET (CMAKE_RELEASE_VERSION
   "${CMAKE_RELEASE_VERSION_MAJOR}.${CMAKE_RELEASE_VERSION_MINOR}.${CMAKE_RELEASE_VERSION_PATCH}")

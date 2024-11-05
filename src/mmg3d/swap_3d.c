@@ -348,7 +348,7 @@ int MMG5_chkswpbdy(MMG5_pMesh mesh, MMG5_pSol met, int64_t *list,int ilist,
 
 #ifndef NDEBUG
   /* Security check: ensure that the edge is boundary */
-  int16_t  tag = 0;
+  uint16_t  tag = 0;
   MMG5_int ref = 0;
   if ( !MMG3D_get_shellEdgeTag(mesh,list[0]/6,list[0]%6,&tag,&ref) ) {
     fprintf(stderr,"\n  ## Warning: %s: 0. unable to get edge info"
@@ -739,9 +739,20 @@ int MMG3D_swap23(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,int8_t metRidTyp,
   }
 
   /** Swap */
+  /* Store useful information from pt1 before overwrite by memcpy*/
   xt1 = pt1->xt;
 
   np    = pt1->v[tau1[0]];
+
+  MMG5_int ref[6] = {0};
+  uint16_t  tag[6] = {0};
+  for (i=0;i<6;i++) {
+    if ( !MMG3D_get_shellEdgeTag(mesh,k1,taued1[i],&tag[i],&ref[i]) ) {
+      fprintf(stderr,"\n  ## Error: %s: %d. unable to get edge info.\n",__func__,i);
+      return 0;
+    }
+  }
+
   memcpy(pt1,pt0,sizeof(MMG5_Tetra));
 
   iel = MMG3D_newElt(mesh);
@@ -879,14 +890,25 @@ int MMG3D_swap23(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,int8_t metRidTyp,
     pxt1 = &mesh->xtetra[xt1];
 
     /* Assignation of the xt fields to the appropriate tets */
+    /* Warning: after collapses, some boundary edges not connected to boundary
+     * faces may have a 0 tag inside a xtetra (see \ref MMG5_colver when a
+     * xtetra is assigned to one of the neighbours of the tetra of the edge
+     * shell). In consequence, we cannot simply use the stored tags. */
+
     /* xt[0] */
     xt[0].tag[taued0[0]] = 0;
-    xt[0].tag[taued0[3]] = pxt1->tag[taued1[2]];
-    xt[0].tag[taued0[4]] = pxt1->tag[taued1[1]];
+
+    xt[0].tag[taued0[3]] = tag[2];
+    xt[0].tag[taued0[4]] = tag[1];
+    /* As the edge tag of tetra 0 may be erroneous if the edge doesn't belong to
+     * a boundary face */
+    xt[0].tag[taued0[5]] = tag[5];
+
 
     xt[0].edg[taued0[0]] = 0;
-    xt[0].edg[taued0[3]] =  pxt1->edg[taued1[2]];
-    xt[0].edg[taued0[4]] =  pxt1->edg[taued1[1]];
+    xt[0].edg[taued0[3]] = ref[2];
+    xt[0].edg[taued0[4]] = ref[1];
+    xt[0].edg[taued0[5]] = ref[5];
 
     xt[0].ref[ tau0[0]] = pxt1->ref[tau1[1]];
     xt[0].ref[ tau0[2]] = 0;
@@ -901,12 +923,18 @@ int MMG3D_swap23(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,int8_t metRidTyp,
 
     /* xt[1] */
     xt[1].tag[taued0[1]] = 0;
-    xt[1].tag[taued0[3]] = pxt1->tag[taued1[0]];
-    xt[1].tag[taued0[5]] = pxt1->tag[taued1[2]];
+
+    xt[1].tag[taued0[3]] = tag[0];
+    xt[1].tag[taued0[5]] = tag[1];
+
+    /* As the edge tag of tetra 0 may be erroneous if the edge doesn't belong to
+     * a boundary face */
+    xt[1].tag[taued0[4]] = tag[3];
 
     xt[1].edg[taued0[1]] = 0;
-    xt[1].edg[taued0[3]] =  pxt1->edg[taued1[0]];
-    xt[1].edg[taued0[5]] =  pxt1->edg[taued1[2]];
+    xt[1].edg[taued0[3]] = ref[0];
+    xt[1].edg[taued0[5]] = ref[1];
+    xt[1].edg[taued0[4]] = ref[3];
 
     xt[1].ref[ tau0[0]] = pxt1->ref[tau1[3]];
     xt[1].ref[ tau0[1]] = 0;
@@ -921,12 +949,18 @@ int MMG3D_swap23(MMG5_pMesh mesh,MMG5_pSol met,MMG5_int k,int8_t metRidTyp,
 
     /* xt[2] */
     xt[2].tag[taued0[2]] = 0;
-    xt[2].tag[taued0[4]] = pxt1->tag[taued1[0]];
-    xt[2].tag[taued0[5]] = pxt1->tag[taued1[1]];
+
+    xt[2].tag[taued0[4]] = tag[0];
+    xt[2].tag[taued0[5]] = tag[2];
+
+    /* As the edge tag of tetra 0 may be erroneous if the edge doesn't belong to
+     * a boundary face */
+    xt[2].tag[taued0[3]] = tag[4];
 
     xt[2].edg[taued0[2]] = 0;
-    xt[2].edg[taued0[4]] = pxt1->edg[taued1[0]];
-    xt[2].edg[taued0[5]] = pxt1->edg[taued1[1]];
+    xt[2].edg[taued0[4]] = ref[0];
+    xt[2].edg[taued0[5]] = ref[2];
+    xt[2].edg[taued0[3]] = ref[4];
 
     xt[2].ref[ tau0[0]] = pxt1->ref[tau1[2]];
     xt[2].ref[ tau0[1]] = 0;
